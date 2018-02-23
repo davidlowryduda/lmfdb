@@ -29,7 +29,7 @@ from lmfdb.modular_forms.maass_forms.maass_waveforms.views.mwf_plot import paint
 from lmfdb.utils import signtocolour, rgbtohex
 
 #DLD TODO remove logger line
-#from lmfdb.lfunctions import logger
+from lmfdb.lfunctions import logger
 
 def get_degree(degree_string):
     if not re.match('degree[0-9]+',degree_string):
@@ -504,6 +504,13 @@ def set_bread_and_friends(L, request):
         if L.fromDB and not L.selfdual:
             friends.append(('Dual L-function', L.dual_link))
         bread = get_bread(1, [(charname, request.url)])
+        logger.info("Are friends the same?\n  {}".format(friends == L.friends(request)))
+        logger.info("Are breads the same?\n  {}".format(bread== L.bread(request)))
+        logger.info("Are origins, factors, instances correct?\n  {}\n  {}\n  {}".format(
+                    origins == L.origins,
+                    factors == L.factors,
+                    instances == L.instances))
+
 
     elif L.Ltype() == 'ellipticcurve':
         bread = L.bread(request)
