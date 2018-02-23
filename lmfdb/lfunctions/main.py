@@ -497,20 +497,11 @@ def set_bread_and_friends(L, request):
         instances = L.instances
 
     elif L.Ltype() == 'dirichlet':
-        snum = str(L.characternumber)
-        smod = str(L.charactermodulus)
-        charname = WebDirichlet.char2tex(smod, snum)
-        friends = [('Dirichlet Character ' + str(charname), friendlink)]
-        if L.fromDB and not L.selfdual:
-            friends.append(('Dual L-function', L.dual_link))
-        bread = get_bread(1, [(charname, request.url)])
-        logger.info("Are friends the same?\n  {}".format(friends == L.friends(request)))
-        logger.info("Are breads the same?\n  {}".format(bread== L.bread(request)))
-        logger.info("Are origins, factors, instances correct?\n  {}\n  {}\n  {}".format(
-                    origins == L.origins,
-                    factors == L.factors,
-                    instances == L.instances))
-
+        bread = L.bread(request)
+        origins = L.origins
+        friends = L.friends(request)
+        factors = L.factors
+        instances = L.instances
 
     elif L.Ltype() == 'ellipticcurve':
         bread = L.bread(request)
