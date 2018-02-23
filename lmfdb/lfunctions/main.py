@@ -28,6 +28,9 @@ from lmfdb.lfunctions import l_function_page
 from lmfdb.modular_forms.maass_forms.maass_waveforms.views.mwf_plot import paintSvgMaass
 from lmfdb.utils import signtocolour, rgbtohex
 
+#DLD TODO remove logger line
+from lmfdb.lfunctions import logger
+
 def get_degree(degree_string):
     if not re.match('degree[0-9]+',degree_string):
         return -1
@@ -488,9 +491,20 @@ def set_bread_and_friends(L, request):
 
     if L.Ltype() == 'riemann':
         friends = [('\(\mathbb Q\)', url_for('number_fields.by_label', label='1.1.1.1')),
-                           ('Dirichlet Character \(\\chi_{1}(1,\\cdot)\)',url_for('characters.render_Dirichletwebpage',
-                                                                                  modulus=1, number=1))]
+                   ('Dirichlet Character \(\\chi_{1}(1,\\cdot)\)',url_for('characters.render_Dirichletwebpage',
+                   modulus=1, number=1))]
+        logger.info("Are the friends equal?")
         bread = get_bread(1, [('Riemann Zeta', request.url)])
+        logger.info(friends == L.friends)
+
+        logger.info("Are the friends equal?")
+        logger.info(bread == L.bread(request))
+
+        logger.info("Are the factors, instances, origins the same?")
+        logger.info("factors {}\ninstances {}\n origins {}".format(
+            factors == L.factors,
+            instances == L.instances,
+            origins == L.origins))
 
     elif L.Ltype() == 'dirichlet':
         snum = str(L.characternumber)
