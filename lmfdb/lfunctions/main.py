@@ -29,7 +29,7 @@ from lmfdb.modular_forms.maass_forms.maass_waveforms.views.mwf_plot import paint
 from lmfdb.utils import signtocolour, rgbtohex
 
 #DLD TODO remove logger line
-from lmfdb.lfunctions import logger
+#from lmfdb.lfunctions import logger
 
 def get_degree(degree_string):
     if not re.match('degree[0-9]+',degree_string):
