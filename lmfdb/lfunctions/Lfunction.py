@@ -330,6 +330,31 @@ class RiemannZeta(Lfunction):
         # Generate a function to do computations
         self.sageLfunction = lc.Lfunction_Zeta()
 
+    def bread(self, request):
+        return get_bread(1, [('Riemann Zeta', request.url)])
+
+    @property
+    def friends(self):
+        return [
+                ('\(\mathbb Q\)',
+                    url_for('number_fields.by_label',
+                    label='1.1.1.1')),
+                ('Dirichlet Character \(\\chi_{1}(1,\\cdot)\)',
+                    url_for('characters.render_Dirichletwebpage', modulus=1, number=1)),
+               ]
+
+    @property
+    def factors(self):
+        return []
+
+    @property
+    def origins(self):
+        return []
+
+    @property
+    def instances(self):
+        return []
+
     def initialize_webpage_data(self):
         self._set_web_displaynames()
         self.info = self.general_webpagedata()
@@ -480,8 +505,8 @@ class Lfunction_from_db(Lfunction):
         self.lfunc_data = LfunctionDatabase.get_lfunction_by_Lhash(self.Lhash)
         makeLfromdata(self)
         self._set_web_displaynames()
-        self._set_title()
         self.info = self.general_webpagedata()
+        self._set_title()
         self.credit = ''
         self.label = ''
 
