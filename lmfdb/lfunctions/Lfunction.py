@@ -561,7 +561,7 @@ class Lfunction_Dirichlet(WebLfunction):
 #############################################################################
 
 
-class Lfunction_from_db(Lfunction):
+class Lfunction_from_db(WebLfunction):
     """
     Class representing a general L-function, to be retrieved from the database
     based on its lhash.
@@ -569,31 +569,24 @@ class Lfunction_from_db(Lfunction):
     Compulsory parameters: Lhash
     """
     def __init__(self, **kwargs):
-        constructor_logger(self, kwargs)
+        super(Lfunction_from_db, self).__init__(**kwargs)
         validate_required_args('Unable to construct L-function from lhash.',
                                kwargs, 'Lhash')
         self._Ltype = "general"
-        self.numcoeff = 30
+        self.label = ''
 
         # this controls data on the Euler product, but is not stored
         # systematically in the database. Default to False until this
         # is retrievable from the database.
         self.langlands = False
 
-        self.__dict__.update(kwargs)
         self.lfunc_data = LfunctionDatabase.get_lfunction_by_Lhash(self.Lhash)
         makeLfromdata(self)
-        self._set_web_displaynames()
-        self.info = self.general_webpagedata()
-        self._set_title()
-        self.credit = ''
-        self.label = ''
+
+        super(Lfunction_from_db, self).initialize_data()
 
     def bread(self, request):
         return [('L-functions', url_for('.l_function_top_page'))]
-
-    def friends(self, request):
-        return []
 
     @property
     def factors(self):
@@ -673,6 +666,13 @@ class Lfunction_from_db(Lfunction):
         self.texnamecompleted1ms_arithmetic = "\\Lambda(" + str(self.motivic_weight + 1) + "-s)"
         self.texnamecompleteds = "\\Lambda(s)"
         return
+
+    def _set_credit(self):
+        self.credit = ''
+
+    def _set_knowltype(self):
+        self.knowltype = 'lhash'
+
 
 
 #############################################################################
