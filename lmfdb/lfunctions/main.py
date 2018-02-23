@@ -29,7 +29,7 @@ from lmfdb.modular_forms.maass_forms.maass_waveforms.views.mwf_plot import paint
 from lmfdb.utils import signtocolour, rgbtohex
 
 #DLD TODO remove logger line
-from lmfdb.lfunctions import logger
+#from lmfdb.lfunctions import logger
 
 def get_degree(degree_string):
     if not re.match('degree[0-9]+',degree_string):
@@ -495,16 +495,6 @@ def set_bread_and_friends(L, request):
         friends = L.friends
         factors = L.factors
         instances = L.instances
-
-        OLDfriends = [('\(\mathbb Q\)', url_for('number_fields.by_label', label='1.1.1.1')),
-                   ('Dirichlet Character \(\\chi_{1}(1,\\cdot)\)',url_for('characters.render_Dirichletwebpage',
-                   modulus=1, number=1))]
-        logger.info("Are the friends equal?")
-        OLDbread = get_bread(1, [('Riemann Zeta', request.url)])
-        logger.info(friends == OLDfriends)
-
-        logger.info("Are the friends equal?")
-        logger.info(bread == OLDbread)
 
     elif L.Ltype() == 'dirichlet':
         snum = str(L.characternumber)
