@@ -355,10 +355,9 @@ class RiemannZeta(WebLfunction):
 
     Possible parameters: numcoeff  (the number of coefficients when computing)
     """
-
     def __init__(self, **kwargs):
         super(RiemannZeta, self).__init__(**kwargs)
-        # Mandatory properties
+
         self._Ltype = "riemann"
         self.fromDB = False
         self.coefficient_type = 1
@@ -379,14 +378,11 @@ class RiemannZeta(WebLfunction):
         self.sign = 1
         self.selfdual = True
         self.dirichlet_coefficients = [1 for n in range(self.numcoeff)]
-
-        # Specific properties for zeta
         self.is_zeta = True
         self.label = "zeta"
 
         super(RiemannZeta, self).initialize_data()
-        # Generate a function to do computations
-        self.sageLfunction = lc.Lfunction_Zeta()
+        self.sageLfunction = lc.Lfunction_Zeta() # Generate L-function to do computations
 
     def bread(self, request):
         return get_bread(1, [('Riemann Zeta', request.url)])
@@ -406,17 +402,14 @@ class RiemannZeta(WebLfunction):
 
     def _set_knowltype(self):
         self.info['knowltype'] = "riemann"
-        return
 
     def _set_title(self):
         self.info['title'] = "Riemann Zeta-function: $\\zeta(s)$"
-        return
 
     def _set_web_displaynames(self):
         self.texname = "\\zeta(s)"
         self.texnamecompleteds = "\\xi(s)"
         self.texnamecompleted1ms = "\\xi(1-s)"
-        return
 
 
 #############################################################################
@@ -431,18 +424,15 @@ class Lfunction_Dirichlet(WebLfunction):
     """
     def __init__(self, **kwargs):
         super(Lfunction_Dirichlet, self).__init__(**kwargs)
+
         self._Ltype = "dirichlet"
         validate_required_args('Unable to construct Dirichlet L-function.',
                                 kwargs, 'charactermodulus', 'characternumber')
         validate_integer_args('Unable to construct Dirichlet L-function.',
                                kwargs, 'charactermodulus', 'characternumber')
         self.check_primitive_character()
-
         self._retrieve_lfunc_data_from_db()
-        # Extract the data
         makeLfromdata(self)
-
-        # Mandatory properties
         self.fromDB = True
         self.coefficient_period = self.charactermodulus
         self._set_coefficient_type()
@@ -525,11 +515,9 @@ class Lfunction_Dirichlet(WebLfunction):
             modnumDual = self.lfunc_data['conjugate'].split('_')[2]
             numDual = modnumDual.split('.')[1]
             self.dual_link = "/L/Character/Dirichlet/%s/%s" % (self.level, numDual)
-        return
 
     def _set_knowltype(self):
         self.info['knowltype'] = "character.dirichlet"
-        return
 
     def _set_title(self):
         title_end = ("where $\\chi$ is the Dirichlet character with label " + self.label)
@@ -537,7 +525,6 @@ class Lfunction_Dirichlet(WebLfunction):
         self.info['title_arithmetic'] = ("$" + self.texname_arithmetic + "$" +
                                          ", " + title_end)
         self.info['title_analytic'] = "$" + self.texname + "$" + ", " + title_end
-        return
 
     def _set_web_displaynames(self):
         self.htmlname = "<em>L</em>(<em>s,&chi;</em>)"
@@ -555,7 +542,6 @@ class Lfunction_Dirichlet(WebLfunction):
         else:
             self.texnamecompleted1ms = "\\Lambda(1-s,\\overline{\\chi})"
             self.texnamecompleted1ms_arithmetic = "\\Lambda(\overline{\\chi},1-s)"
-        return
 
 #############################################################################
 
@@ -569,6 +555,7 @@ class Lfunction_from_db(WebLfunction):
     """
     def __init__(self, **kwargs):
         super(Lfunction_from_db, self).__init__(**kwargs)
+
         validate_required_args('Unable to construct L-function from lhash.',
                                kwargs, 'Lhash')
         self._Ltype = "general"
@@ -654,7 +641,6 @@ class Lfunction_from_db(WebLfunction):
                             conductor=self.level)
         self.info['title_arithmetic'] = ("L-function" + title_end)
         self.info['title_analytic'] = ("L-function" + title_end)
-        return
 
     def _set_web_displaynames(self):
         self.htmlname_arithmetic = "<em>L</em>(<em>s</em>)"
@@ -664,7 +650,6 @@ class Lfunction_from_db(WebLfunction):
         self.texnamecompleteds_arithmetic = "\\Lambda(s)"
         self.texnamecompleted1ms_arithmetic = "\\Lambda(" + str(self.motivic_weight + 1) + "-s)"
         self.texnamecompleteds = "\\Lambda(s)"
-        return
 
     def _set_credit(self):
         self.credit = ''
@@ -688,6 +673,7 @@ class Lfunction_EC(WebLfunction):
     """
     def __init__(self, **kwargs):
         super(Lfunction_EC, self).__init__(**kwargs)
+
         validate_required_args('Unable to construct elliptic curve L-function.',
                                kwargs, 'field_label', 'conductor_label',
                                'isogeny_class_label')
@@ -837,7 +823,6 @@ class Lfunction_EC(WebLfunction):
         self.long_isogeny_class_label = self.conductor_label + '.' + self.isogeny_class_label
         return
 
-
     def _retrieve_lfunc_data_from_db(self):
         isogeny_class_url = "EllipticCurve/%s/%s/%s" % (self.field,
                                                         self.conductor_label,
@@ -855,7 +840,6 @@ class Lfunction_EC(WebLfunction):
             self.info['knowltype'] = "ec.q"
         else:
             self.info['knowltype'] = "ec.nf"
-        return
 
     def _set_title(self):
         title_end = (" of degree %d, weight 1, conductor %d,"
@@ -863,7 +847,6 @@ class Lfunction_EC(WebLfunction):
         self.info['title'] = "$" + self.texname + "$" + ", " + title_end
         self.info['title_arithmetic'] = "L-function "  + title_end
         self.info['title_analytic'] = "L-function " + title_end
-        return
 
     def _set_web_displaynames(self):
         self.texname = "L(s)"  # "L(s,E)"
@@ -875,7 +858,6 @@ class Lfunction_EC(WebLfunction):
         self.texnamecompleteds_arithmetic = "\\Lambda(s)"  # "\\Lambda(E,s)"
         self.texnamecompleted1ms_arithmetic = "\\Lambda(" + str(self.motivic_weight + 1) + "-s)"
         # "\\Lambda(E, " + str(self.motivic_weight + 1) + "-s)"
-        return
 
 
 class Lfunction_EMF(Lfunction):
