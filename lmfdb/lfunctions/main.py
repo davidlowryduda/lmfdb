@@ -506,7 +506,7 @@ def set_bread_and_friends(L, request):
         bread = get_bread(1, [(charname, request.url)])
 
     elif L.Ltype() == 'ellipticcurve':
-        bread = L.bread
+        bread = L.bread(request)
         origins = L.origins
         friends = L.friends
         factors = L.factors
@@ -660,7 +660,7 @@ def set_bread_and_friends(L, request):
             bread = [('L-functions', url_for('.l_function_top_page'))]
 
     elif L.Ltype() == "general":
-        bread = L.bread
+        bread = L.bread(request)
         origins = L.origins
         friends = L.friends
         factors = L.factors

@@ -330,9 +330,6 @@ class RiemannZeta(Lfunction):
         # Generate a function to do computations
         self.sageLfunction = lc.Lfunction_Zeta()
 
-    def bread(self, request):
-        return get_bread(1, [('Riemann Zeta', request.url)])
-
     @property
     def friends(self):
         return [
@@ -348,12 +345,15 @@ class RiemannZeta(Lfunction):
         return []
 
     @property
-    def origins(self):
+    def instances(self):
         return []
 
     @property
-    def instances(self):
+    def origins(self):
         return []
+
+    def bread(self, request):
+        return get_bread(1, [('Riemann Zeta', request.url)])
 
     def initialize_webpage_data(self):
         self._set_web_displaynames()
@@ -510,8 +510,7 @@ class Lfunction_from_db(Lfunction):
         self.credit = ''
         self.label = ''
 
-    @property
-    def bread(self):
+    def bread(self, request):
         return [('L-functions', url_for('.l_function_top_page'))]
 
     @property
@@ -660,8 +659,7 @@ class Lfunction_EC(Lfunction):
             return True
         return False
 
-    @property
-    def bread(self):
+    def bread(self, request):
         """breadcrumbs for webpage"""
         if self.base_field() == '1.1.1.1': #i.e. QQ
             lbread = get_bread(2,
