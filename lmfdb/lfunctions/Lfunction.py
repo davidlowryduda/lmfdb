@@ -285,6 +285,18 @@ class WebLfunction(Lfunction):
     """
     Base class for L-functions oriented for display on the web. Each class of
     L-function should track its own data for display on the website.
+
+    Subclasses should call this __init__ at the start of their __init__, and
+    call this initialize_data at the end of their __init__. Subclasses need
+    to overwrite the four methods
+
+        _set_web_displaynames()
+        _add_titles_to_info()
+        _credit()
+        _add_knowltype_to_info()
+
+    and should overwrite bread, friends, origins, instances, and factors
+    to establish the data they make available for rendering on the webpage.
     """
     def __init__(self, **kwargs):
         constructor_logger(self, kwargs)

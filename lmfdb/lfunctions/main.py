@@ -489,21 +489,7 @@ def set_bread_and_friends(L, request):
     splitlink = friendlink.rpartition('/')
     friendlink = splitlink[0] + splitlink[2]
 
-    if L.Ltype() == 'riemann':
-        bread = L.bread(request)
-        origins = L.origins
-        friends = L.friends(request)
-        factors = L.factors
-        instances = L.instances
-
-    elif L.Ltype() == 'dirichlet':
-        bread = L.bread(request)
-        origins = L.origins
-        friends = L.friends(request)
-        factors = L.factors
-        instances = L.instances
-
-    elif L.Ltype() == 'ellipticcurve':
+    if L.Ltype() in ['riemann', 'dirichlet', 'ellipticcurve', 'general']:
         bread = L.bread(request)
         origins = L.origins
         friends = L.friends(request)
@@ -547,7 +533,6 @@ def set_bread_and_friends(L, request):
             bread = get_bread(2, [('Maass Form',
                                            url_for('.l_function_maass_browse_page')),
                                           ('\(' + L.texname + '\)', request.url)])
-
         else:
             if L.fromDB and not L.selfdual:
                 friends = [('Dual L-function', L.dual_link)]
@@ -556,7 +541,6 @@ def set_bread_and_friends(L, request):
                                       [('Maass Form', url_for('.l_function_maass_gln_browse_page',
                                                               degree='degree' + str(L.degree))),
                                        (L.dbid.partition('/')[2], request.url)])
-
 
     elif L.Ltype() == 'hilbertmodularform':
         friendlink = '/'.join(friendlink.split('/')[:-1])
@@ -608,7 +592,6 @@ def set_bread_and_friends(L, request):
         else:
             bread = [('L-functions', url_for('.l_function_top_page'))]
 
-
     elif L.Ltype() == 'SymmetricPower':
         def ordinal(n):
             if n == 2:
@@ -656,13 +639,6 @@ def set_bread_and_friends(L, request):
             bread = get_bread(L.degree, [])
         else:
             bread = [('L-functions', url_for('.l_function_top_page'))]
-
-    elif L.Ltype() == "general":
-        bread = L.bread(request)
-        origins = L.origins
-        friends = L.friends(request)
-        factors = L.factors
-        instances = L.instances
 
     return (bread, origins, friends, factors, instances)
 
