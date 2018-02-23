@@ -1,3 +1,5 @@
+import re
+
 from Lfunction import RiemannZeta
 from LfunctionLcalc import createLcalcfile_ver1
 from LfunctionPlot import paintSvgHolo, paintSvgChar, paintSvgFileAll
@@ -16,8 +18,11 @@ class LfunctionTest(LmfdbTest):
         assert 'Anzahl der Primzahlen' in L.data
 
     def test_riemann(self):
+        """Checking Riemann Zeta function page"""
         L = self.tc.get('/L/Riemann/')
-        assert 'Riemann Zeta-function' in L.data
+        self.assertTrue('Riemann Zeta-function' in L.data)
+        self.assertTrue(bool(re.search('Self-dual</td><td>\s*yes', L.data)),
+                        "Problem with self-dual property in property box.")
 
     def test_LDirichlet(self):
         L = self.tc.get('/L/Character/Dirichlet/19/9/')
@@ -296,9 +301,7 @@ class LfunctionTest(LmfdbTest):
         assert '2.15654793578' in L.data
 
     def test_Llhash(self):
-        r"""
-        Checking L/lhash/ pages
-        """
+        r"""Checking L/lhash/ pages"""
         # The hash for /L/EllipticCurve/Q/324016/h
         L = self.tc.get('/L/lhash/1938322253992393114/')
         self.assertTrue('324016' in L.data,
