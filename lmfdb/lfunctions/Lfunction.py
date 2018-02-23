@@ -349,7 +349,7 @@ class WebLfunction(Lfunction):
 # The subclasses
 #############################################################################
 
-class RiemannZeta(Lfunction):
+class RiemannZeta(WebLfunction):
     """
     Class representing the Riemann zeta function
 
@@ -357,14 +357,9 @@ class RiemannZeta(Lfunction):
     """
 
     def __init__(self, **kwargs):
-        constructor_logger(self, kwargs)
-        self._Ltype = "riemann"
-        self.numcoeff = 30
-
-        # Put the arguments into the object dictionary
-        self.__dict__.update(kwargs)
 
         # Mandatory properties
+        self._Ltype = "riemann"
         self.fromDB = False
         self.coefficient_type = 1
         self.coefficient_period = 0
@@ -379,7 +374,6 @@ class RiemannZeta(Lfunction):
         self.level = 1
         self.mu_fe = [0]
         self.nu_fe = []
-        self.compute_kappa_lambda_Q_from_mu_nu()
         self.algebraic = True
         self.motivic_weight = 0
         self.sign = 1
@@ -390,22 +384,9 @@ class RiemannZeta(Lfunction):
         self.is_zeta = True
         self.label = "zeta"
 
-        self.initialize_webpage_data()
-
+        super(RiemannZeta, self).initialize_data()
         # Generate a function to do computations
         self.sageLfunction = lc.Lfunction_Zeta()
-
-    @property
-    def factors(self):
-        return []
-
-    @property
-    def instances(self):
-        return []
-
-    @property
-    def origins(self):
-        return []
 
     def bread(self, request):
         return get_bread(1, [('Riemann Zeta', request.url)])
@@ -419,12 +400,8 @@ class RiemannZeta(Lfunction):
                     url_for('characters.render_Dirichletwebpage', modulus=1, number=1)),
                ]
 
-    def initialize_webpage_data(self):
-        self._set_web_displaynames()
-        self.info = self.general_webpagedata()
-        self._set_title()
+    def _set_credit(self):
         self.credit = 'Sage'
-        self._set_knowltype()
         return
 
     def _set_knowltype(self):
