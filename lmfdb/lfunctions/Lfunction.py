@@ -437,7 +437,6 @@ class Lfunction_Dirichlet(WebLfunction):
         validate_integer_args('Unable to construct Dirichlet L-function.',
                                kwargs, 'charactermodulus', 'characternumber')
         self.check_primitive_character()
-        self.numcoeff = 30
 
         self._retrieve_lfunc_data_from_db()
         # Extract the data
