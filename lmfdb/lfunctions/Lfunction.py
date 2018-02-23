@@ -323,7 +323,7 @@ class WebLfunction(Lfunction):
     def initialize_webpage_data(self):
         self._set_web_displaynames()
         self.info = self.general_webpagedata()
-        self._set_title()
+        self._add_titles_to_info()
         self.credit = self._credit()
         self._add_knowltype_to_info()
         return
@@ -340,7 +340,7 @@ class WebLfunction(Lfunction):
         raise NotImplementedError("This method should be overwritten by "
                                   "subclasses of WebLfunction")
 
-    def _set_title():
+    def _add_titles_to_info():
         raise NotImplementedError("This method should be overwritten by "
                                   "subclasses of WebLfunction")
 
@@ -402,7 +402,7 @@ class RiemannZeta(WebLfunction):
     def _add_knowltype_to_info(self):
         self.info['knowltype'] = "riemann"
 
-    def _set_title(self):
+    def _add_titles_to_info(self):
         self.info['title'] = "Riemann Zeta-function: $\\zeta(s)$"
 
     def _set_web_displaynames(self):
@@ -518,7 +518,7 @@ class Lfunction_Dirichlet(WebLfunction):
     def _add_knowltype_to_info(self):
         self.info['knowltype'] = "character.dirichlet"
 
-    def _set_title(self):
+    def _add_titles_to_info(self):
         title_end = ("where $\\chi$ is the Dirichlet character with label " + self.label)
         self.info['title'] = "$" + self.texname + "$" + ", " + title_end
         self.info['title_arithmetic'] = ("$" + self.texname_arithmetic + "$" +
@@ -616,7 +616,7 @@ class Lfunction_from_db(WebLfunction):
                 lorigins.append((name, ""))
         return lorigins
 
-    def _set_title(self):
+    def _add_titles_to_info(self):
         '''
         If `charactermodulus` and `characternumber` are defined, make a title
         which includes the character. Otherwise, make a title without character.
@@ -840,7 +840,7 @@ class Lfunction_EC(WebLfunction):
         else:
             self.info['knowltype'] = "ec.nf"
 
-    def _set_title(self):
+    def _add_titles_to_info(self):
         title_end = (" of degree %d, weight 1, conductor %d,"
                      " and trivial character" % (self.degree, self.conductor))
         self.info['title'] = "$" + self.texname + "$" + ", " + title_end
