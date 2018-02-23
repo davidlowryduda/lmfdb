@@ -284,7 +284,8 @@ def generateSageLfunction(L):
 #############################################################################
 
 class RiemannZeta(Lfunction):
-    """Class representing the Riemann zeta fucntion
+    """
+    Class representing the Riemann zeta function
 
     Possible parameters: numcoeff  (the number of coefficients when computing)
     """
@@ -296,9 +297,6 @@ class RiemannZeta(Lfunction):
 
         # Put the arguments into the object dictionary
         self.__dict__.update(kwargs)
-
-        # DLD TODO: why is this line necessary?
-        self.numcoeff = int(self.numcoeff)
 
         # Mandatory properties
         self.fromDB = False
