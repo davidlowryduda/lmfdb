@@ -325,14 +325,14 @@ class WebLfunction(Lfunction):
         self.info = self.general_webpagedata()
         self._set_title()
         self.credit = self._credit()
-        self._set_knowltype()
+        self._add_knowltype_to_info()
         return
 
     def _credit():
         raise NotImplementedError("This method should be overwritten by "
                                   "subclasses of WebLfunction")
 
-    def _set_knowltype():
+    def _add_knowltype_to_info():
         raise NotImplementedError("This method should be overwritten by "
                                   "subclasses of WebLfunction")
 
@@ -399,7 +399,7 @@ class RiemannZeta(WebLfunction):
     def _credit(self):
         return 'Sage'
 
-    def _set_knowltype(self):
+    def _add_knowltype_to_info(self):
         self.info['knowltype'] = "riemann"
 
     def _set_title(self):
@@ -515,7 +515,7 @@ class Lfunction_Dirichlet(WebLfunction):
             numDual = modnumDual.split('.')[1]
             self.dual_link = "/L/Character/Dirichlet/%s/%s" % (self.level, numDual)
 
-    def _set_knowltype(self):
+    def _add_knowltype_to_info(self):
         self.info['knowltype'] = "character.dirichlet"
 
     def _set_title(self):
@@ -653,7 +653,7 @@ class Lfunction_from_db(WebLfunction):
     def _credit(self):
         return ''
 
-    def _set_knowltype(self):
+    def _add_knowltype_to_info(self):
         self.knowltype = 'lhash'
 
 
@@ -834,7 +834,7 @@ class Lfunction_EC(WebLfunction):
     def _credit(self):
         return ''
 
-    def _set_knowltype(self):
+    def _add_knowltype_to_info(self):
         if self.field_degree == 1:
             self.info['knowltype'] = "ec.q"
         else:
