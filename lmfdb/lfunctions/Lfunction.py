@@ -28,6 +28,7 @@ from sage.all import ZZ, QQ, RR, CC, Integer, Rational, Reals, nth_prime, is_pri
 import sage.libs.lcalc.lcalc_Lfunction as lc
 
 from lmfdb.characters.TinyConrey import ConreyCharacter
+from lmfdb.WebCharacter import WebDirichlet
 from lmfdb.WebNumberField import WebNumberField
 from lmfdb.modular_forms.elliptic_modular_forms.backend.web_newforms import WebNewForm
 from lmfdb.modular_forms.maass_forms.maass_waveforms.backend.mwf_classes import WebMaassForm
@@ -411,15 +412,34 @@ class Lfunction_Dirichlet(Lfunction):
         self.residues = []
         self.langlands = True
         self.quasidegree = self.degree
-
-        # Specific properties
-        if not self.selfdual:  #TODO: This should be done on a general level
-            modnumDual = self.lfunc_data['conjugate'].split('_')[2]
-            numDual = modnumDual.split('.')[1]
-            self.dual_link = "/L/Character/Dirichlet/%s/%s" % (self.level, numDual)
+        self._set_dual_link()
 
         self.initialize_webpage_data()
 
+    @property
+    def factors(self):
+        return []
+
+    @property
+    def instances(self):
+        return []
+
+    @property
+    def origins(self):
+        return []
+
+    def bread(self, request):
+        return get_bread(1, [(self.webcharname, request.url)])
+
+    def friends(self, request):
+        friendlink = request.url.replace('/L/', '/').replace(
+                        '/L-function/', '/').replace('/Lfunction/', '/')
+        splitlink = friendlink.rpartition('/')
+        friendlink = splitlink[0] + splitlink[2]
+        friends = [('Dirichlet Character ' + str(self.webcharname), friendlink)]
+        if self.fromDB and not self.selfdual:
+            friends.append(('Dual L-function', self.dual_link))
+        return friends
 
     def check_primitive_character(self):
         """
@@ -481,6 +501,14 @@ class Lfunction_Dirichlet(Lfunction):
         else:
             self.coefficient_type = 3
 
+    def _set_dual_link(self):
+        #TODO: This should be done on a general level
+        if not self.selfdual:
+            modnumDual = self.lfunc_data['conjugate'].split('_')[2]
+            numDual = modnumDual.split('.')[1]
+            self.dual_link = "/L/Character/Dirichlet/%s/%s" % (self.level, numDual)
+        return
+
     def _set_knowltype(self):
         self.info['knowltype'] = "character.dirichlet"
         return
@@ -500,6 +528,9 @@ class Lfunction_Dirichlet(Lfunction):
         self.texname_arithmetic = "L(\\chi,s)"
         self.texnamecompleteds = "\\Lambda(s,\\chi)"
         self.texnamecompleteds_arithmetic = "\\Lambda(\\chi,s)"
+        snum = str(self.characternumber)
+        smod = str(self.charactermodulus)
+        self.webcharname = WebDirichlet.char2tex(smod, snum)
         if self.selfdual:
             self.texnamecompleted1ms = "\\Lambda(1-s,\\chi)"
             self.texnamecompleted1ms_arithmetic = "\\Lambda(\\chi,1-s)"
