@@ -277,6 +277,72 @@ def generateSageLfunction(L):
                                         L.poles, L.residues)
 
 
+#######################################################################
+#                         WebLfunction Class
+#######################################################################
+
+class WebLfunction(Lfunction):
+    """
+    Base class for L-functions oriented for display on the web. Each class of
+    L-function should track its own data for display on the website.
+    """
+    def __init__(self, **kwargs):
+        constructor_logger(self, kwargs)
+        self.__dict__.update(kwargs)
+        self.numcoeff = 30
+
+    def initialize_data(self):
+        self.compute_kappa_lambda_Q_from_mu_nu()
+        self.initialize_webpage_data()
+
+    @property
+    def factors(self):
+        return []
+
+    @property
+    def instances(self):
+        return []
+
+    @property
+    def origins(self):
+        return []
+
+    def bread(self, request):
+        return []
+
+    def friends(self, request):
+        return []
+
+    def friendlink(self, request):
+        friendlink = request.url.replace('/L/', '/').replace(
+                        '/L-function/', '/').replace('/Lfunction/', '/')
+        splitlink = friendlink.rpartition('/')
+        friendlink = splitlink[0] + splitlink[2]
+        return friendlink
+
+    def initialize_webpage_data(self):
+        self._set_web_displaynames()
+        self.info = self.general_webpagedata()
+        self._set_title()
+        self._set_credit()
+        self._set_knowltype()
+        return
+
+    def _set_credit():
+        raise NotImplementedError("This method should be overwritten by "
+                                  "subclasses of WebLfunction")
+
+    def _set_knowltype():
+        raise NotImplementedError("This method should be overwritten by "
+                                  "subclasses of WebLfunction")
+
+    def _set_web_displaynames():
+        raise NotImplementedError("This method should be overwritten by "
+                                  "subclasses of WebLfunction")
+
+    def _set_title():
+        raise NotImplementedError("This method should be overwritten by "
+                                  "subclasses of WebLfunction")
 
 
 #############################################################################
