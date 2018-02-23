@@ -324,11 +324,11 @@ class WebLfunction(Lfunction):
         self._set_web_displaynames()
         self.info = self.general_webpagedata()
         self._set_title()
-        self._set_credit()
+        self.credit = self._credit()
         self._set_knowltype()
         return
 
-    def _set_credit():
+    def _credit():
         raise NotImplementedError("This method should be overwritten by "
                                   "subclasses of WebLfunction")
 
@@ -396,9 +396,8 @@ class RiemannZeta(WebLfunction):
                     url_for('characters.render_Dirichletwebpage', modulus=1, number=1)),
                ]
 
-    def _set_credit(self):
-        self.credit = 'Sage'
-        return
+    def _credit(self):
+        return 'Sage'
 
     def _set_knowltype(self):
         self.info['knowltype'] = "riemann"
@@ -506,8 +505,8 @@ class Lfunction_Dirichlet(WebLfunction):
         else:
             self.coefficient_type = 3
 
-    def _set_credit(self):
-        self.credit = 'Sage'
+    def _credit(self):
+        return 'Sage'
 
     def _set_dual_link(self):
         #TODO: This should be done on a general level
@@ -651,8 +650,8 @@ class Lfunction_from_db(WebLfunction):
         self.texnamecompleted1ms_arithmetic = "\\Lambda(" + str(self.motivic_weight + 1) + "-s)"
         self.texnamecompleteds = "\\Lambda(s)"
 
-    def _set_credit(self):
-        self.credit = ''
+    def _credit(self):
+        return ''
 
     def _set_knowltype(self):
         self.knowltype = 'lhash'
@@ -832,8 +831,8 @@ class Lfunction_EC(WebLfunction):
             raise KeyError('No L-function instance data for "%s" was found in the database.' % isogeny_class_url)
         return
 
-    def _set_credit(self):
-        self.credit = ''
+    def _credit(self):
+        return ''
 
     def _set_knowltype(self):
         if self.field_degree == 1:
