@@ -492,7 +492,7 @@ def set_bread_and_friends(L, request):
     if L.Ltype() == 'riemann':
         bread = L.bread(request)
         origins = L.origins
-        friends = L.friends
+        friends = L.friends(request)
         factors = L.factors
         instances = L.instances
 
@@ -506,7 +506,7 @@ def set_bread_and_friends(L, request):
     elif L.Ltype() == 'ellipticcurve':
         bread = L.bread(request)
         origins = L.origins
-        friends = L.friends
+        friends = L.friends(request)
         factors = L.factors
         instances = L.instances
 
@@ -660,7 +660,7 @@ def set_bread_and_friends(L, request):
     elif L.Ltype() == "general":
         bread = L.bread(request)
         origins = L.origins
-        friends = L.friends
+        friends = L.friends(request)
         factors = L.factors
         instances = L.instances
 

@@ -332,16 +332,6 @@ class RiemannZeta(Lfunction):
         self.sageLfunction = lc.Lfunction_Zeta()
 
     @property
-    def friends(self):
-        return [
-                ('\(\mathbb Q\)',
-                    url_for('number_fields.by_label',
-                    label='1.1.1.1')),
-                ('Dirichlet Character \(\\chi_{1}(1,\\cdot)\)',
-                    url_for('characters.render_Dirichletwebpage', modulus=1, number=1)),
-               ]
-
-    @property
     def factors(self):
         return []
 
@@ -355,6 +345,15 @@ class RiemannZeta(Lfunction):
 
     def bread(self, request):
         return get_bread(1, [('Riemann Zeta', request.url)])
+
+    def friends(self, request):
+        return [
+                ('\(\mathbb Q\)',
+                    url_for('number_fields.by_label',
+                    label='1.1.1.1')),
+                ('Dirichlet Character \(\\chi_{1}(1,\\cdot)\)',
+                    url_for('characters.render_Dirichletwebpage', modulus=1, number=1)),
+               ]
 
     def initialize_webpage_data(self):
         self._set_web_displaynames()
@@ -573,6 +572,9 @@ class Lfunction_from_db(Lfunction):
     def bread(self, request):
         return [('L-functions', url_for('.l_function_top_page'))]
 
+    def friends(self, request):
+        return []
+
     @property
     def factors(self):
         lfactors = []
@@ -615,10 +617,6 @@ class Lfunction_from_db(Lfunction):
                 name += '&nbsp;  n/a';
                 lorigins.append((name, ""))
         return lorigins
-
-    @property
-    def friends(self):
-        return []
 
     def _set_title(self):
         '''
@@ -742,6 +740,20 @@ class Lfunction_EC(Lfunction):
                 ])
         return lbread
 
+    def friends(self, request):
+        """The 'friends' to show on webpage."""
+        lfriends = []
+        if self.base_field() == '1.1.1.1': #i.e. QQ
+            # only show symmetric powers for non-CM curves
+            if not isogeny_class_cm(self.label):
+                lfriends.append(('Symmetric square L-function',
+                                url_for(".l_function_ec_sym_page_label",
+                                    power='2', label=self.label)))
+                lfriends.append(('Symmetric cube L-function',
+                                url_for(".l_function_ec_sym_page_label",
+                                    power='3', label=self.label)))
+        return lfriends
+
     @property
     def factors(self):
         """
@@ -766,21 +778,6 @@ class Lfunction_EC(Lfunction):
     @property
     def field(self):
         return "Q" if self.field_degree == 1 else self.field_label
-
-    @property
-    def friends(self):
-        """The 'friends' to show on webpage."""
-        lfriends = []
-        if self.base_field() == '1.1.1.1': #i.e. QQ
-            # only show symmetric powers for non-CM curves
-            if not isogeny_class_cm(self.label):
-                lfriends.append(('Symmetric square L-function',
-                                url_for(".l_function_ec_sym_page_label",
-                                    power='2', label=self.label)))
-                lfriends.append(('Symmetric cube L-function',
-                                url_for(".l_function_ec_sym_page_label",
-                                    power='3', label=self.label)))
-        return lfriends
 
     @property
     def instances(self):
