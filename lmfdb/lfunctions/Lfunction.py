@@ -290,14 +290,13 @@ class RiemannZeta(Lfunction):
 
     def __init__(self, **args):
         constructor_logger(self, args)
-
         self._Ltype = "riemann"
-
-        # Initialize default values
-        self.numcoeff = 30  # set default to 30 coefficients
+        self.numcoeff = 30
 
         # Put the arguments into the object dictionary
         self.__dict__.update(args)
+
+        # DLD TODO: why is this line necessary?
         self.numcoeff = int(self.numcoeff)
 
         # Mandatory properties
@@ -306,7 +305,7 @@ class RiemannZeta(Lfunction):
         self.coefficient_period = 0
         self.poles = [0, 1]
         self.residues = [-1, 1]
-        self.poles_L = [1]  # poles of L(s), used by createLcalcfile_ver2
+        self.poles_L = [1]     # poles of L(s), used by createLcalcfile_ver2
         self.residues_L = [1]  # residues of L(s) createLcalcfile_ver2
         self.langlands = True
         self.primitive = True
@@ -321,24 +320,38 @@ class RiemannZeta(Lfunction):
         self.sign = 1
         self.selfdual = True
         self.dirichlet_coefficients = [1 for n in range(self.numcoeff)]
+
+        # Specific properties for zeta
+        self.is_zeta = True
         self.label = "zeta"
 
-        # Specific properties
-        self.is_zeta = True
-
-        # Text for the web page
-        self.texname = "\\zeta(s)"
-        self.texnamecompleteds = "\\xi(s)"
-        self.texnamecompleted1ms = "\\xi(1-s)"
-        self.credit = 'Sage'
-
-        # Initiate the dictionary info that contains the data for the webpage
-        self.info = self.general_webpagedata()
-        self.info['knowltype'] = "riemann"
-        self.info['title'] = "Riemann Zeta-function: $\\zeta(s)$"
+        self.initialize_webpage_data()
 
         # Generate a function to do computations
         self.sageLfunction = lc.Lfunction_Zeta()
+
+    def initialize_webpage_data(self):
+        self._set_web_displaynames()
+        self.info = self.general_webpagedata()
+        self._set_title()
+        self.credit = 'Sage'
+        self._set_knowltype()
+        return
+
+    def _set_knowltype(self):
+        self.info['knowltype'] = "riemann"
+        return
+
+    def _set_title(self):
+        self.info['title'] = "Riemann Zeta-function: $\\zeta(s)$"
+        return
+
+    def _set_web_displaynames(self):
+        self.texname = "\\zeta(s)"
+        self.texnamecompleteds = "\\xi(s)"
+        self.texnamecompleted1ms = "\\xi(1-s)"
+        return
+
 
 #############################################################################
 
@@ -467,8 +480,8 @@ class Lfunction_from_db(Lfunction):
         self.lfunc_data = LfunctionDatabase.get_lfunction_by_Lhash(self.Lhash)
         makeLfromdata(self)
         self._set_web_displaynames()
-        self.info = self.general_webpagedata()
         self._set_title()
+        self.info = self.general_webpagedata()
         self.credit = ''
         self.label = ''
 
