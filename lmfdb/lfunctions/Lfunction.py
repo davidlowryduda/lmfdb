@@ -357,7 +357,7 @@ class RiemannZeta(WebLfunction):
     """
 
     def __init__(self, **kwargs):
-
+        super(RiemannZeta, self).__init__(**kwargs)
         # Mandatory properties
         self._Ltype = "riemann"
         self.fromDB = False
@@ -678,7 +678,7 @@ class Lfunction_from_db(WebLfunction):
 #############################################################################
 
 
-class Lfunction_EC(Lfunction):
+class Lfunction_EC(WebLfunction):
     """
     Class representing an elliptic curve L-function
     over a number field, possibly QQ.
@@ -688,16 +688,11 @@ class Lfunction_EC(Lfunction):
              'isogeny_class_label': <isogeny_class_label> }
     """
     def __init__(self, **kwargs):
-        constructor_logger(self, kwargs)
+        super(Lfunction_EC, self).__init__(**kwargs)
         validate_required_args('Unable to construct elliptic curve L-function.',
                                kwargs, 'field_label', 'conductor_label',
                                'isogeny_class_label')
         self._Ltype = "ellipticcurve"
-        self.numcoeff = 30
-
-        # Put the arguments into the object dictionary
-        self.__dict__.update(kwargs)
-
         # Set field, conductor, isogeny information from labels
         self._parse_labels()
 
@@ -713,7 +708,7 @@ class Lfunction_EC(Lfunction):
         self.degree = self.field_degree * 2;
         self.langlands = self.is_langlands()
 
-        self.initialize_webpage_data()
+        super(Lfunction_EC, self).initialize_data()
 
     def base_field(self):
         """base_field of the EC"""
@@ -722,14 +717,6 @@ class Lfunction_EC(Lfunction):
     def ground_field(self):
         """Field of the Dirichlet coefficients"""
         return 'Q'
-
-    def initialize_webpage_data(self):
-        self._set_web_displaynames()
-        self.info = self.general_webpagedata()
-        self._set_title()
-        self.credit = ''
-        self._set_knowltype()
-        return
 
     def is_langlands(self):
         if self.field_degree == 1 or \
@@ -800,12 +787,6 @@ class Lfunction_EC(Lfunction):
         return "Q" if self.field_degree == 1 else self.field_label
 
     @property
-    def instances(self):
-        # Currently elliptic curve L-fns don't track other instances of the
-        # L-fn, but the website expects this property to exist.
-        return []
-
-    @property
     def label(self):
         if self.field_degree == 1:
             llabel = self.long_isogeny_class_label
@@ -866,6 +847,9 @@ class Lfunction_EC(Lfunction):
         if not self.lfunc_data:
             raise KeyError('No L-function instance data for "%s" was found in the database.' % isogeny_class_url)
         return
+
+    def _set_credit(self):
+        self.credit = ''
 
     def _set_knowltype(self):
         if self.field_degree == 1:
