@@ -422,7 +422,7 @@ class RiemannZeta(WebLfunction):
 #############################################################################
 
 
-class Lfunction_Dirichlet(Lfunction):
+class Lfunction_Dirichlet(WebLfunction):
     """
     Class representing the L-function of a Dirichlet character.
 
@@ -430,15 +430,14 @@ class Lfunction_Dirichlet(Lfunction):
                            characternumber
     """
     def __init__(self, **kwargs):
-        constructor_logger(self, kwargs)
+        super(Lfunction_Dirichlet, self).__init__(**kwargs)
+        self._Ltype = "dirichlet"
         validate_required_args('Unable to construct Dirichlet L-function.',
                                 kwargs, 'charactermodulus', 'characternumber')
         validate_integer_args('Unable to construct Dirichlet L-function.',
                                kwargs, 'charactermodulus', 'characternumber')
-        self._Ltype = "dirichlet"
-        self.__dict__.update(kwargs)
-        self.numcoeff = 30
         self.check_primitive_character()
+        self.numcoeff = 30
 
         self._retrieve_lfunc_data_from_db()
         # Extract the data
@@ -452,31 +451,16 @@ class Lfunction_Dirichlet(Lfunction):
         self.residues = []
         self.langlands = True
         self.quasidegree = self.degree
+
+        super(Lfunction_Dirichlet, self).initialize_data()
         self._set_dual_link()
-
-        self.initialize_webpage_data()
-
-    @property
-    def factors(self):
-        return []
-
-    @property
-    def instances(self):
-        return []
-
-    @property
-    def origins(self):
-        return []
 
     def bread(self, request):
         return get_bread(1, [(self.webcharname, request.url)])
 
     def friends(self, request):
-        friendlink = request.url.replace('/L/', '/').replace(
-                        '/L-function/', '/').replace('/Lfunction/', '/')
-        splitlink = friendlink.rpartition('/')
-        friendlink = splitlink[0] + splitlink[2]
-        friends = [('Dirichlet Character ' + str(self.webcharname), friendlink)]
+        friends = [('Dirichlet Character ' + str(self.webcharname),
+                     self.friendlink(request))]
         if self.fromDB and not self.selfdual:
             friends.append(('Dual L-function', self.dual_link))
         return friends
@@ -512,14 +496,6 @@ class Lfunction_Dirichlet(Lfunction):
                      .format(self.charactermodulus, self.characternumber)))
         return
 
-    def initialize_webpage_data(self):
-        self._set_web_displaynames()
-        self.info = self.general_webpagedata()
-        self._set_title()
-        self.credit = 'Sage'
-        self._set_knowltype()
-        return
-
     def _retrieve_lfunc_data_from_db(self):
         self.label = str(self.charactermodulus) + "." + str(self.characternumber)
         Lhash = "dirichlet_L_{0}.{1}".format(self.charactermodulus, self.characternumber)
@@ -540,6 +516,9 @@ class Lfunction_Dirichlet(Lfunction):
                                                      self.dirichlet_coefficients[n])))
         else:
             self.coefficient_type = 3
+
+    def _set_credit(self):
+        self.credit = 'Sage'
 
     def _set_dual_link(self):
         #TODO: This should be done on a general level
