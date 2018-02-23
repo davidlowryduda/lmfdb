@@ -490,21 +490,21 @@ def set_bread_and_friends(L, request):
     friendlink = splitlink[0] + splitlink[2]
 
     if L.Ltype() == 'riemann':
-        friends = [('\(\mathbb Q\)', url_for('number_fields.by_label', label='1.1.1.1')),
+        bread = L.bread(request)
+        origins = L.origins
+        friends = L.friends
+        factors = L.factors
+        instances = L.instances
+
+        OLDfriends = [('\(\mathbb Q\)', url_for('number_fields.by_label', label='1.1.1.1')),
                    ('Dirichlet Character \(\\chi_{1}(1,\\cdot)\)',url_for('characters.render_Dirichletwebpage',
                    modulus=1, number=1))]
         logger.info("Are the friends equal?")
-        bread = get_bread(1, [('Riemann Zeta', request.url)])
-        logger.info(friends == L.friends)
+        OLDbread = get_bread(1, [('Riemann Zeta', request.url)])
+        logger.info(friends == OLDfriends)
 
         logger.info("Are the friends equal?")
-        logger.info(bread == L.bread(request))
-
-        logger.info("Are the factors, instances, origins the same?")
-        logger.info("factors {}\ninstances {}\n origins {}".format(
-            factors == L.factors,
-            instances == L.instances,
-            origins == L.origins))
+        logger.info(bread == OLDbread)
 
     elif L.Ltype() == 'dirichlet':
         snum = str(L.characternumber)
