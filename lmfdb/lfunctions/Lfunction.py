@@ -288,13 +288,13 @@ class RiemannZeta(Lfunction):
     Possible parameters: numcoeff  (the number of coefficients when computing)
     """
 
-    def __init__(self, **args):
-        constructor_logger(self, args)
+    def __init__(self, **kwargs):
+        constructor_logger(self, kwargs)
         self._Ltype = "riemann"
         self.numcoeff = 30
 
         # Put the arguments into the object dictionary
-        self.__dict__.update(args)
+        self.__dict__.update(kwargs)
 
         # DLD TODO: why is this line necessary?
         self.numcoeff = int(self.numcoeff)
@@ -382,66 +382,31 @@ class RiemannZeta(Lfunction):
 
 
 class Lfunction_Dirichlet(Lfunction):
-    """Class representing the L-function of a Dirichlet character
+    """
+    Class representing the L-function of a Dirichlet character.
 
     Compulsory parameters: charactermodulus
                            characternumber
     """
-
-    def __init__(self, **args):
-        constructor_logger(self, args)
-
-        # Check for compulsory arguments
-        validate_required_args ('Unable to construct Dirichlet L-function.',
-                                args, 'charactermodulus', 'characternumber')
-        validate_integer_args ('Unable to construct Dirichlet L-function.',
-                               args, 'charactermodulus', 'characternumber')
-
+    def __init__(self, **kwargs):
+        constructor_logger(self, kwargs)
+        validate_required_args('Unable to construct Dirichlet L-function.',
+                                kwargs, 'charactermodulus', 'characternumber')
+        validate_integer_args('Unable to construct Dirichlet L-function.',
+                               kwargs, 'charactermodulus', 'characternumber')
         self._Ltype = "dirichlet"
-
-        # Put the arguments into the object dictionary
-        self.__dict__.update(args)
+        self.__dict__.update(kwargs)
         self.numcoeff = 30
+        self.check_primitive_character()
 
-        # Check that the arguments give a primitive Dirichlet character in the database
-        self.charactermodulus = int(self.charactermodulus)
-        self.characternumber = int(self.characternumber)
-        if self.charactermodulus > 10**20: # avoid trying to factor anything really big
-            raise ValueError('Unable to construct Dirichlet L-function.',
-                             'The specified modulus %d is too large.'%self.charactermodulus)
-        if self.characternumber > self.charactermodulus:
-            raise ValueError('Unable to construct Dirichlet L-function.',
-                             'The Conrey index %d should not exceed the modulus %d.'%(self.characternumber,self.charactermodulus))
-        if gcd(self.charactermodulus,self.characternumber) != 1:
-            raise ValueError('Unable to construct Dirichlet L-function.',
-                             'The specified Conrey index %d is not coprime to the modulus %d.'%(self.characternumber,self.charactermodulus))
-        # Use ConreyCharacter to check primitivity (it can handle a huge modulus
-        if not ConreyCharacter(self.charactermodulus,self.characternumber).is_primitive():
-            raise ValueError('Unable to construct Dirichlet L-function,',
-                             'The Dirichlet character $\chi_{%d}(%d,\cdot)$ is imprimitive; only primitive characters have L-functions).'%(self.charactermodulus,self.characternumber))
-
-        # Load data from the database
-        self.label = str(self.charactermodulus) + "." + str(self.characternumber)
-        Lhash = "dirichlet_L_{0}.{1}".format(self.charactermodulus,
-                                                self.characternumber)
-        try:
-            self.lfunc_data = LfunctionDatabase.getInstanceLdata(Lhash,
-                                                         label_type = "Lhash")
-        except:
-            raise KeyError('No L-function data for the Dirichlet character $\chi_{%d}(%d,\cdot)$ found in the database.'%(self.charactermodulus,self.characternumber))
-
+        self._retrieve_lfunc_data_from_db()
         # Extract the data
         makeLfromdata(self)
-        self.fromDB = True
 
-       # Mandatory properties
+        # Mandatory properties
+        self.fromDB = True
         self.coefficient_period = self.charactermodulus
-        if self.selfdual:
-            self.coefficient_type = 2
-            for n in range(0, self.numcoeff - 1):
-                self.dirichlet_coefficients[n] = int(round(real(self.dirichlet_coefficients[n])))
-        else:
-            self.coefficient_type = 3
+        self._set_coefficient_type()
         self.poles = []
         self.residues = []
         self.langlands = True
@@ -453,7 +418,82 @@ class Lfunction_Dirichlet(Lfunction):
             numDual = modnumDual.split('.')[1]
             self.dual_link = "/L/Character/Dirichlet/%s/%s" % (self.level, numDual)
 
-        # Text for the web page
+        self.initialize_webpage_data()
+
+
+    def check_primitive_character(self):
+        """
+        Check that the modulus and number give a primitive Dirichlet
+        in the database. If the modulus is larger than 10**20, factoring
+        takes too long, so raise an error.
+
+        If the character is imprimitive, raise an error.
+        """
+        self.charactermodulus = int(self.charactermodulus)
+        self.characternumber = int(self.characternumber)
+        if self.charactermodulus > 10**20: # avoid trying to factor anything really big
+            raise ValueError('Unable to construct Dirichlet L-function.',
+                    'The specified modulus {} is too large.'
+                    .format(self.charactermodulus))
+        if self.characternumber > self.charactermodulus:
+            raise ValueError('Unable to construct Dirichlet L-function.',
+                    'The Conrey index {} should not exceed the modulus {}.'
+                    .format(self.characternumber, self.charactermodulus))
+        if gcd(self.charactermodulus, self.characternumber) != 1:
+            raise ValueError('Unable to construct Dirichlet L-function.',
+                    'The specified Conrey index {} is not coprime to the modulus {}.'
+                    .format(self.characternumber, self.charactermodulus))
+        # Use ConreyCharacter to check primitivity. This can handle a huge modulus.
+        if not ConreyCharacter(self.charactermodulus,
+                               self.characternumber).is_primitive():
+            raise ValueError('Unable to construct Dirichlet L-function,',
+                    ('The Dirichlet character $\chi_{{ {} }}({},\cdot)$ is imprimitive; '
+                     'only primitive characters have L-functions.'
+                     .format(self.charactermodulus, self.characternumber)))
+        return
+
+    def initialize_webpage_data(self):
+        self._set_web_displaynames()
+        self.info = self.general_webpagedata()
+        self._set_title()
+        self.credit = 'Sage'
+        self._set_knowltype()
+        return
+
+    def _retrieve_lfunc_data_from_db(self):
+        self.label = str(self.charactermodulus) + "." + str(self.characternumber)
+        Lhash = "dirichlet_L_{0}.{1}".format(self.charactermodulus, self.characternumber)
+        try:
+            self.lfunc_data = LfunctionDatabase.getInstanceLdata(Lhash,
+                                                         label_type = "Lhash")
+        except:
+            raise KeyError('No L-function data for the Dirichlet character'
+            '$\chi_{{ {} }}({},\cdot)$ found in the database.'
+            .format(self.charactermodulus,self.characternumber))
+        return
+
+    def _set_coefficient_type(self):
+        if self.selfdual:
+            self.coefficient_type = 2
+            for n in range(0, self.numcoeff - 1):
+                self.dirichlet_coefficients[n] = int(round(real(
+                                                     self.dirichlet_coefficients[n])))
+        else:
+            self.coefficient_type = 3
+
+    def _set_knowltype(self):
+        self.info['knowltype'] = "character.dirichlet"
+        return
+
+    def _set_title(self):
+        title_end = ("where $\\chi$ is the Dirichlet character with label " + self.label)
+        self.info['title'] = "$" + self.texname + "$" + ", " + title_end
+        self.info['title_arithmetic'] = ("$" + self.texname_arithmetic + "$" +
+                                         ", " + title_end)
+        self.info['title_analytic'] = "$" + self.texname + "$" + ", " + title_end
+        return
+
+    def _set_web_displaynames(self):
         self.htmlname = "<em>L</em>(<em>s,&chi;</em>)"
         self.texname = "L(s,\\chi)"
         self.htmlname_arithmetic = "<em>L</em>(<em>&chi;,s</em>)"
@@ -466,18 +506,7 @@ class Lfunction_Dirichlet(Lfunction):
         else:
             self.texnamecompleted1ms = "\\Lambda(1-s,\\overline{\\chi})"
             self.texnamecompleted1ms_arithmetic = "\\Lambda(\overline{\\chi},1-s)"
-        title_end = ("where $\\chi$ is the Dirichlet character with label "
-                     + self.label)
-        self.credit = 'Sage'
-
-        # Initiate the dictionary info that contains the data for the webpage
-        self.info = self.general_webpagedata()
-        self.info['knowltype'] = "character.dirichlet"
-        self.info['title'] = "$" + self.texname + "$" + ", " + title_end
-        self.info['title_arithmetic'] = ("$" + self.texname_arithmetic + "$" +
-                                 ", " + title_end)
-        self.info['title_analytic'] = "$" + self.texname + "$" + ", " + title_end
-
+        return
 
 #############################################################################
 
