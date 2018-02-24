@@ -9,7 +9,7 @@
 
 import os
 import logging
-from time import sleep
+from time import sleep, time
 from flask import Flask, g, url_for, abort
 import pymongo
 from pymongo import MongoClient, MongoReplicaSetClient
@@ -335,8 +335,13 @@ class LmfdbTest(unittest2.TestCase):
 
     def setUp(self):
         app.config['TESTING'] = True
+        self.start_time = time()
         self.app = app
         self.tc = app.test_client()
         import lmfdb.website
         assert lmfdb.website
         self.C = getDBConnection()
+
+    def tearDown(self):
+        t = time() - self.start_time
+        print "\n%s: %.3f" % (self.id(), t)
