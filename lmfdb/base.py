@@ -344,4 +344,4 @@ class LmfdbTest(unittest2.TestCase):
 
     def tearDown(self):
         t = time() - self.start_time
-        print "\n%s: %.3f" % (self.id(), t)
+        print "\nTIME::%s: %.3f" % (self.id(), t)
