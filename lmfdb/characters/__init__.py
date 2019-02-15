@@ -12,7 +12,7 @@ logger = make_logger(characters_page)
 def body_class():
     return {'body_class': 'characters'}
 
-import main
+from . import main
 assert main # silence pyflakes
 
 app.register_blueprint(characters_page, url_prefix="/Character")

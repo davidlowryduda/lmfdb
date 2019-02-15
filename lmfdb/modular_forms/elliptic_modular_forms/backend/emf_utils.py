@@ -27,7 +27,7 @@ from lmfdb.modular_forms.elliptic_modular_forms import emf_logger, emf_version
 logger = emf_logger
 from sage.all import vector, QQ, Matrix, cached_method
 from sage.misc.cachefunc import cached_function 
-from plot_dom import draw_fundamental_domain
+from .plot_dom import draw_fundamental_domain
 import lmfdb.base
 import re
 from lmfdb.search_parsing import parse_range
@@ -35,6 +35,16 @@ try:
     from dirichlet_conrey import DirichletGroup, DirichletGroup_conrey, DirichletCharacter_conrey
 except:
     emf_logger.critical("Could not import dirichlet_conrey!")
+
+
+# python3 compatability
+# If (when) the LMFDB uses only python3, one should replace all occurrences of
+# basestring with str.
+import sys
+if sys.version_info > (3, 0):
+    basestring = str
+from six import viewitems
+
 
 def newform_label(level, weight, character, label, embedding=None, make_cache_label=False):
     r"""
@@ -59,14 +69,14 @@ def parse_newform_label(label):
 
     """
     if not isinstance(label,basestring):
-        raise ValueError,"Need label in string format"
+        raise ValueError("Need label in string format")
     l = label.split(".")
     ## l[0] = label, l[1] = weight, l[2]="{character}{label}" or {character}
     ## l[3] = {label} or {embedding}, l[4] is either non-existing or {embedding}
     if len(l) not in [3,4,5]:
-        raise ValueError,"{0} is not a valid newform label!".format(label)
+        raise ValueError("{0} is not a valid newform label!".format(label))
     if not l[0].isdigit() or not l[1].isdigit():
-        raise ValueError,"{0} is not a valid newform label!".format(label)
+        raise ValueError("{0} is not a valid newform label!".format(label))
     level = int(l[0]); weight = int(l[1]); orbit_label = ""
     emb = None
     try:
@@ -83,7 +93,7 @@ def parse_newform_label(label):
         if orbit_label == "" or not orbit_label.isalpha():
             raise ValueError
     except (ValueError,IndexError):
-        raise ValueError,"{0} is not a valid newform label!".format(label)
+        raise ValueError("{0} is not a valid newform label!".format(label))
     if not emb is None:
         return level,weight,int(character),orbit_label,emb
     else:
@@ -97,7 +107,7 @@ def space_label(level, weight, character, make_cache_label=False):
 
 def parse_space_label(label):
     if not isinstance(label,basestring):
-        raise ValueError,"Need label in string format"    
+        raise ValueError("Need label in string format"    )
     l = label.split(".")
     try:
         if len(l) ==3:
@@ -106,7 +116,7 @@ def parse_space_label(label):
         else:
             raise ValueError
     except ValueError:
-        raise ValueError,"{0} is not a valid space label!".format(label)
+        raise ValueError("{0} is not a valid space label!".format(label))
 
 @cached_function
 def orbit_index_from_label(label):
@@ -143,7 +153,7 @@ def is_newform_in_db(newform_label):
 
 @cached_method
 def is_modformspace_in_db(space_label):
-    from web_modform_space import WebModFormSpace
+    from .web_modform_space import WebModFormSpace
     # first check that we clled with a valid label, otherwise raise ValueError
     level,weight,character = parse_space_label(space_label)
     search = {'level':level,'weight':weight,'character':character,'version':float(emf_version)}
@@ -267,7 +277,7 @@ def ajax_more2(callback, *arg_list, **kwds):
     if inline:
         args = arg_list[0]
         emf_logger.debug("args={0}".format(args))
-        key1, key2 = args.keys()
+        key1, key2 = list(args.keys())
         l1 = args[key1]
         l2 = args[key2]
         emf_logger.debug("key1={0}".format(key1))
@@ -539,7 +549,7 @@ def find_newform_label(level,weight,character,field,aps):
         then we simply return that label. (This will save a lot of time...)
         
     """
-    from web_modform_space import WebModFormSpace
+    from .web_modform_space import WebModFormSpace
     from sage.all import NumberField,QQ
     M = WebModFormSpace(level=level,weight=weight,character=character)
     if M.dimension_new_cusp_forms==1:
@@ -547,29 +557,30 @@ def find_newform_label(level,weight,character,field,aps):
     orbits = M.hecke_orbits
     ## construct field from field input... 
     if not isinstance(field,list):
-        raise ValueError,"Need to give field as a list!"
+        raise ValueError("Need to give field as a list!")
     if not isinstance(aps,dict):
-        raise ValueError,"Need to give aps as a dict!"
+        raise ValueError("Need to give aps as a dict!")
     if field == [1]:
         NF = QQ
     else:
         NF = NumberField(QQ['x'](field),names='x')
     degree_of_input = NF.absolute_degree()
-    degrees = map(lambda x:x[1].coefficient_field_degree,orbits.viewitems())
+    degrees = [x[1].coefficient_field_degree for x in orbits.items()]
+
     if degrees.count(degree_of_input)==0:
-        raise ValueError,"No newform with this level, weight, character and field degree!"
+        raise ValueError("No newform with this level, weight, character and field degree!")
     if degrees.count(degree_of_input)==1:
         ## If there is a unique mathcing field we return this orbit label.
-        l = filter(lambda x: x[1].coefficient_field_degree==degree_of_input,orbits.viewitems() )
+        l = [x for x in orbits.items() if x[1].coefficient_field_degree==degree_of_input]
         return l[0][0]
-    aps_input = { p: NF(a) for p,a in aps.viewitems()}
-    possible_labels = orbits.keys()
-    for label,f in orbits.viewitems():
+    aps_input = { p: NF(a) for p,a in viewitems(aps)}
+    possible_labels = list(orbits.keys())
+    for label,f in viewitems(orbits):
         if f.coefficient_field_degree != degree_of_input:
             possible_labels.remove(label)
             continue
         try:
-            for p,ap_input in aps_input.viewitems():
+            for p,ap_input in viewitems(aps_input):
                 if f.coefficient_field == QQ:
                     homs = [lambda x: x]
                 else:
@@ -582,8 +593,8 @@ def find_newform_label(level,weight,character,field,aps):
         except StopIteration:
             continue
     if len(possible_labels) > 1:
-        raise ArithmeticError,"Not sufficient data (or errors) to determine orbit!"
+        raise ArithmeticError("Not sufficient data (or errors) to determine orbit!")
     if len(possible_labels) == 0:
-        raise ArithmeticError,"Not sufficient data (or errors) to determine orbit! NO matching label found!"
+        raise ArithmeticError("Not sufficient data (or errors) to determine orbit! NO matching label found!")
     return possible_labels[0]
             

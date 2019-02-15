@@ -1,6 +1,6 @@
-from type_generation import String, Array, Dict, Int, Anything
+from .type_generation import String, Array, Dict, Int, Anything
 
-from standard_types import PolynomialAsString, PermutationAsList,\
+from .standard_types import PolynomialAsString, PermutationAsList,\
     TooLargeInt, LabelString, FiniteSequence, FiniteSet, PrimeIndexedSequence, \
     PolynomialAsSequenceInt, PolynomialAsSequenceTooLargeInt
 

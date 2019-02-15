@@ -3,7 +3,7 @@
 #  Copyright (C) 2010
 #  Fredrik Strömberg <fredrik314@gmail.com>,
 #  Stephan Ehlen <stephan.j.ehlen@gmail.com>
-# 
+#
 #  Distributed under the terms of the GNU General Public License (GPL)
 #
 #    This code is distributed in the hope that it will be useful,
@@ -24,7 +24,7 @@ AUTHORS:
 
  - Fredrik Stroemberg
  - Stephan Ehlen
- 
+
  """
 
 import re, sage
@@ -48,7 +48,7 @@ from lmfdb.modular_forms.elliptic_modular_forms.backend.web_object import (
      WebPoly,
      WebProperty,
      WebProperties,
-     WebNumberField,     
+     WebNumberField,
      )
 
 from lmfdb.modular_forms.elliptic_modular_forms.backend.web_character import (
@@ -62,7 +62,7 @@ from lmfdb.modular_forms.elliptic_modular_forms.backend.web_modform_space import
      )
 
 from lmfdb.modular_forms.elliptic_modular_forms.backend.emf_utils import (
-        newform_label, 
+        newform_label,
         parse_newform_label,
         orbit_index_from_label
     )
@@ -95,6 +95,15 @@ from sage.structure.unique_representation import CachedRepresentation
 
 from sage.databases.cremona import cremona_letter_code
 
+# python3 compatability
+# If (when) the LMFDB uses only python3, one should replace all occurrences of
+# basestring with str.
+import sys
+if sys.version_info > (3, 0):
+    basestring = str
+from six import iteritems
+from six import iteritems, itervalues
+
 class WebqExp(WebPoly):
 
     def __init__(self, name,
@@ -117,7 +126,7 @@ class WebqExp(WebPoly):
         if name is not None and self.value().base_ring().absolute_degree()>1:
             oldname = latex(self.value().base_ring().gen())
             subfrom = oldname.strip()
-            subfrom = subfrom.replace("\\","\\\\")  
+            subfrom = subfrom.replace("\\","\\\\")
             subfrom = subfrom.replace("{","\\{")   # because x_{0} means something in a regular expression
             if subfrom[0].isalpha():
                 subfrom = "\\b" + subfrom
@@ -167,7 +176,7 @@ class WebqExp(WebPoly):
             QR = PowerSeriesRing(coeffs.values()[0].parent(),name='q',order='neglex')
             q = QR.gen()
             res = 0*q**0
-            for n, c in coeffs.iteritems():
+            for n, c in iteritems(coeffs):
                 res += c*q**n
             res = res.add_bigoh(len(coeffs.keys())+1)
             self.set_value(res)
@@ -227,10 +236,10 @@ class WebEigenvalues(WebObject, CachedRepresentation):
             self._ap = {}
 
     def primes(self):
-        return self._ap.keys()
+        return list(self._ap.keys())
 
     def has_eigenvalue(self, p):
-        return self._ap.has_key(p)
+        return p in self._ap
 
     def max_coefficient_in_db(self):
         r"""
@@ -242,7 +251,7 @@ class WebEigenvalues(WebObject, CachedRepresentation):
             return 0
         max_prec_in_db = max(r['prec'] for r in prec_in_db)
         return next_prime(max_prec_in_db)-1
-        
+
     def __getitem__(self, p):
         if self.auto_update and not self.has_eigenvalue(p):
             self.prec = p
@@ -254,7 +263,7 @@ class WebEigenvalues(WebObject, CachedRepresentation):
         self._ap[p] = v
 
     def __iter__(self):
-        return self._ap.itervalues()
+        return itervalues(self._ap.itervalues)
 
     def __len__(self):
         return len(self._ap)
@@ -264,11 +273,11 @@ class WebEigenvalues(WebObject, CachedRepresentation):
 
     def __repr__(self):
         return "Collection of {0} eigenvalues.".format(len(self._ap))
-        
-        
+
+
 
 class WebCoeffs(WebProperty):
-    
+
     def __init__(self, name,
                 default_value=None, convert_to = 'auto',
                      save_to_db=True, save_to_fs=True):
@@ -300,7 +309,7 @@ class WebCoeffs(WebProperty):
                     'nv_coeff_norm': str(self._nv_coeff_norm),
                     'nv_coeff_trace': str(self._nv_coeff_trace),
                     'elt_type': self._elt_type}
-    
+
 
     def from_fs(self, coeffs):
         if not isinstance(coeffs, dict):
@@ -331,7 +340,7 @@ class WebCoeffs(WebProperty):
 
     def convert(self):
         if len(self._value) == 0:
-            return 
+            return
         convert_to = self._convert_to
         #more types to come?
         if not convert_to in ['auto', 'poly', None]:
@@ -348,7 +357,7 @@ class WebCoeffs(WebProperty):
             if self._elt_type == 'nfabs':
                 emf_logger.debug("Converting from nfabs to poly!")
                 R = PolynomialRing(QQ,names=str(elt.parent().gen()))
-                self._value  = {k: R(str(v)) for k,v in self._value.iteritems()}
+                self._value  = {k: R(str(v)) for k,v in iteritems(self._value)}
             elif self._elt_type == 'nfrel':
                 emf_logger.debug("Converting from nfrel to poly!")
                 if elt.parent().base_ring() == QQ:
@@ -359,7 +368,7 @@ class WebCoeffs(WebProperty):
                 #R = PolynomialRing(QQ, names=[str(self._value.values()[0].parent().base_ring().gen()),\
                 #                                  str(self._value.values()[0].parent().gen())])
                 self._elt_type = 'poly'
-                self._value = {k: T(str(v)) for k,v in self._value.iteritems()}
+                self._value = {k: T(str(v)) for k,v in iteritems(self._value)}
 
     def value(self):
         return self
@@ -371,10 +380,10 @@ class WebCoeffs(WebProperty):
         return self._value.get(n,default)
 
     def values(self):
-        return self._value.values()
+        return list(self._value.values())
 
     def keys(self):
-        return self._value.keys()
+        return list(self._value.keys())
 
     def first_nonvanishing_coefficient(self, return_index=False):
         r"""
@@ -407,7 +416,7 @@ class WebCoeffs(WebProperty):
             return self._nv_coeff_norm
         except AttributeError as e:
             emf_logger.critical(e)
-        
+
     def first_nonvanishing_coefficient_trace(self):
         if self._nv_coeff_trace is not None:
             return self._nv_coeff_trace
@@ -454,10 +463,10 @@ class WebCoeffs(WebProperty):
                 self.first_nonvanishing_coefficient_trace()
 
     def iteritems(self):
-        return self._value.iteritems()
+        return iteritems(self._value)
 
     def __iter__(self):
-        return self._value.itervalues()
+        return itervalues(self._value)
 
     def __len__(self):
         return len(self._value)
@@ -468,7 +477,7 @@ class WebCoeffs(WebProperty):
     def __repr__(self):
         return "Collection of {0} coefficients.".format(len(self._value))
 
-    
+
 class WebNewForm(WebObject, CachedRepresentation):
 
     _key = ['level', 'weight', 'character', 'label', 'version']
@@ -494,7 +503,7 @@ class WebNewForm(WebObject, CachedRepresentation):
                 if isinstance(label,(int,Integer)):
                     label = cremona_letter_code(label)
                 else:
-                    raise ValueError,"Need label either string or integer! We got:{0}".format(label)
+                    raise ValueError("Need label either string or integer! We got:{0}".format(label))
 
         emf_logger.debug("Before init properties 0")
         self._properties = WebProperties(
@@ -513,7 +522,7 @@ class WebNewForm(WebObject, CachedRepresentation):
             WebqExp('q_expansion'),
             WebCoeffs('_coefficients'),
             WebDict('_embeddings'),
-            WebInt('prec',value=0, save_to_db=False, save_to_fs=True), 
+            WebInt('prec',value=0, save_to_db=False, save_to_fs=True),
             WebNumberField('base_ring'),
             WebNumberField('coefficient_field'),
             WebInt('coefficient_field_degree'),
@@ -547,15 +556,15 @@ class WebNewForm(WebObject, CachedRepresentation):
             )
 
         self._add_to_fs_query = {'prec': {'$gt': int(self.prec-1)}}
-        
+
         # We're setting the WebEigenvalues property after calling __init__ of the base class
         # because it will set hecke_orbit_label from the db first
 
-        ## 
+        ##
         ## We don't init the eigenvalues (since E*v is slow)
         ## unless we (later) request a coefficient which is not
         ## in self._coefficients
-        
+
         self.eigenvalues = WebEigenvalues(self.hecke_orbit_label, prec = self.prec, \
                                               init_dynamic_properties=False, \
                                               update_from_db = False)
@@ -601,7 +610,7 @@ class WebNewForm(WebObject, CachedRepresentation):
             if not self.q_expansion.prec >= self.prec:
                 self._properties['q_expansion'].set_from_coefficients(self._coefficients)
             self._properties['q_expansion'].maxprec = self.prec
-        
+
     def q_expansion_latex(self, prec=None, name=None):
         return self._properties['q_expansion'].latex(prec, name, keepzeta=True)
 
@@ -611,8 +620,8 @@ class WebNewForm(WebObject, CachedRepresentation):
         else:
             q = exp(2*CC.pi()*CC(0,1)*z)
             return sum(self.coefficient_embedding(n,embedding)*q**n for n in range(self.prec))
-            
-    
+
+
     def coefficient(self, n):
         r"""
           Return coefficient nr. n
@@ -623,7 +632,7 @@ class WebNewForm(WebObject, CachedRepresentation):
                 return 0
         c = self._coefficients.get(n, None)
         if c is None:
-            c = self.coefficients([n])[0] 
+            c = self.coefficients([n])[0]
         return c
 
     def first_nonvanishing_coefficient(self, return_index = True):
@@ -678,11 +687,11 @@ class WebNewForm(WebObject, CachedRepresentation):
                 embc = [embc[0] for x in range(self.coefficient_field_degree)]
                 self._embeddings['values'][n]=embc
         if i > len(embc):
-            raise ValueError,"Embedding nr. {0} does not exist of a number field of degree {1},embc={2}".format(i,self.coefficient_field_degree,embc)
+            raise ValueError("Embedding nr. {0} does not exist of a number field of degree {1},embc={2}".format(i,self.coefficient_field_degree,embc))
         return embc[i]
-        
-        
-    def coefficients(self, nrange=range(1, 10), save_to_db=False):
+
+
+    def coefficients(self, nrange=list(range(1, 10)), save_to_db=False):
         r"""
          Gives the coefficients in a range.
          We assume that the self._ap containing Hecke eigenvalues
@@ -701,7 +710,7 @@ class WebNewForm(WebObject, CachedRepresentation):
         recompute = False
         for n in nrange:
             c = self._coefficients.get(n, None)
-            #emf_logger.debug("c({0}) in self._coefficients={1}".format(n,c))            
+            #emf_logger.debug("c({0}) in self._coefficients={1}".format(n,c))
             if c is None:
                 if n == 0 and self.is_cuspidal:
                     c = 0
@@ -713,7 +722,7 @@ class WebNewForm(WebObject, CachedRepresentation):
         if recompute and save_to_db:
             self.save_to_db(update=True)
         return res
-       
+
     def coefficient_n_recursive(self, n):
         r"""
           Reimplement the recursive algorithm in sage modular/hecke/module.py
@@ -730,7 +739,7 @@ class WebNewForm(WebObject, CachedRepresentation):
                 if not ev.has_eigenvalue(2):
                     ev.init_dynamic_properties()
             else:
-                raise StopIteration,"Newform does not have eigenvalue a(2)!"
+                raise StopIteration("Newform does not have eigenvalue a(2)!")
             self._coefficients[2]=ev[2]
             K = ev[2].parent()
         prod = K(1)
@@ -754,7 +763,7 @@ class WebNewForm(WebObject, CachedRepresentation):
                     cp = ev[p]
             #emf_logger.debug("c{0} = {1}, parent={2}".format(p,cp,cp.parent()))
             if cp is None:
-                raise IndexError,"p={0} is outside the range of computed primes (primes up to {1})! for label:{2}".format(p,max(ev.primes()),self.label)
+                raise IndexError("p={0} is outside the range of computed primes (primes up to {1})! for label:{2}".format(p,max(ev.primes()),self.label))
             if self._coefficients.get(pr) is None:
                 if r == 1:
                     c = cp
@@ -780,16 +789,16 @@ class WebNewForm(WebObject, CachedRepresentation):
                         prod *= K(self._coefficients[pr].vector())
                     else:
                         emf_logger.debug("vec={0}".format(self._coefficients[pr].vector()))
-                        raise ArithmeticError,"Wrong size of vectors!"
+                        raise ArithmeticError("Wrong size of vectors!")
                 else:
-                    raise ArithmeticError,"Can not compute product of coefficients!"
-            
+                    raise ArithmeticError("Can not compute product of coefficients!")
+
         return prod
 
     def available_precs(self):
         r"""
         The precision is the number of computed Fourier coefficients.
-        We have several records in the database for each newform, 
+        We have several records in the database for each newform,
         each in a different precision.
         This method returns a list of the precisions that are available in the database for this newform.
         """
@@ -831,7 +840,7 @@ class WebNewForm(WebObject, CachedRepresentation):
         """
         if not (self.character.is_trivial() or self.character.order == 2):
             return None
-        
+
         l = self.atkin_lehner_eigenvalues()
         return l.get(Q)
 
@@ -848,7 +857,7 @@ class WebNewForm(WebObject, CachedRepresentation):
         """
         if not (self.character.is_trivial() or self.character.order == 2):
             return None
-        
+
         if(len(self._atkin_lehner_eigenvalues.keys()) > 0):
             return self._atkin_lehner_eigenvalues
 
@@ -866,7 +875,7 @@ class WebNewForm(WebObject, CachedRepresentation):
                     if G.are_equivalent(c,Q/self.level):
                         self._atkin_lehner_eigenvalues_at_cusps[c] = Q,ev
         return self._atkin_lehner_eigenvalues_at_cusps
-        
+
     def url(self):
         return url_for('emf.render_elliptic_modular_forms', level=self.level, weight=self.weight, character=self.character.number, label=self.label)
 
@@ -880,7 +889,7 @@ class WebNewForm(WebObject, CachedRepresentation):
         if not hasattr(self, '_file_record_length'):
             self.update_from_db()
         l = self._file_record_length
-            
+
         if l > max_length or self.prec > want_prec:
             nl = float(l)/float(self.prec)*float(want_prec)
             if nl > max_length:
@@ -892,13 +901,13 @@ class WebNewForm(WebObject, CachedRepresentation):
             include_coeffs = self.complexity_of_first_nonvanishing_coefficients() <= default_max_height
             if include_coeffs:
                 self.q_expansion = self.q_expansion.truncate_powerseries(prec)
-                self._coefficients = {n:c for n,c in self._coefficients.iteritems() if n<prec}
+                self._coefficients = {n:c for n,c in iteritems(self._coefficients) if n<prec}
             else:
                 self.q_expansion = self.q_expansion.truncate_powerseries(1)
                 self._coefficients = {}
                 self.prec = 0
                 self.coefficient_field = NumberField(self.absolute_polynomial, names=str(self.coefficient_field.gen()))
-            self._embeddings['values'] = {n:c for n,c in self._embeddings['values'].iteritems() if n<prec}
+            self._embeddings['values'] = {n:c for n,c in iteritems(self._embeddings['values']) if n<prec}
             self._embeddings['prec'] = prec
             self.save_to_db()
 
@@ -925,7 +934,7 @@ class WebNewForm(WebObject, CachedRepresentation):
         s = s + "D = DirichletGroup({N})\n".format(
             N = self.level
             )
-        s = s + "f = {{'coefficients': {coeffs}, 'level' : {level}, 'weight': {weight}, 'character': D.Element(D,vector({elt})), 'label': '{label}','dimension': {dim}, 'is_cm': {cm} , 'cm_discriminant': {cm_disc}, 'atkin_lehner': {al}, 'explicit_formulas': {ep}}}".format(coeffs = self.coefficients(range(prec)),
+        s = s + "f = {{'coefficients': {coeffs}, 'level' : {level}, 'weight': {weight}, 'character': D.Element(D,vector({elt})), 'label': '{label}','dimension': {dim}, 'is_cm': {cm} , 'cm_discriminant': {cm_disc}, 'atkin_lehner': {al}, 'explicit_formulas': {ep}}}".format(coeffs = self.coefficients(list(range(prec))),
             level=self.level, weight=self.weight, elt = list(self.character.sage_character.element()), label=self.hecke_orbit_label, dim=self.dimension, cm=self.is_cm, cm_disc=None if not self.is_cm else self.cm_disc , al=self.atkin_lehner_eigenvalues(),
             ep = self.explicit_formulas
             )
@@ -953,13 +962,13 @@ class WebNewForm(WebObject, CachedRepresentation):
     def dump_coefficients(self, prec):
         if prec is None:
             prec = self.prec
-        return dumps(self.coefficients(range(prec)))
+        return dumps(self.coefficients(list(range(prec))))
 
 from lmfdb.modular_forms.elliptic_modular_forms.backend.emf_utils import multiply_mat_vec
 from lmfdb.modular_forms.elliptic_modular_forms import use_cache
 
 def WebNewForm_cached(level,weight,character,label,parent=None, **kwds):
-    if use_cache: 
+    if use_cache:
         M = WebModFormSpace_cached(level, weight, character, **kwds)
         return M.hecke_orbits[label]
     else:

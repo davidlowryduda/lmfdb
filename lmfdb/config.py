@@ -151,7 +151,7 @@ class Configuration(object):
         del default_arguments_dict['config_file']
 
         self.default_args = {}
-        for key, val in default_arguments_dict.iteritems():
+        for key, val in default_arguments_dict.items():
             sec, opt = key.split('_', 1)
             if sec not in self.default_args:
                 self.default_args[sec] = {}
@@ -160,15 +160,18 @@ class Configuration(object):
 
 
 
-        from ConfigParser import ConfigParser
+        if sys.version_info > (3, 0): # python 3
+            from configparser import ConfigParser
+        else:                         # python 2
+            from ConfigParser import ConfigParser
 
         # reading the config file, creating it if necessary
         # 2/1: does config file exist?
         if not os.path.exists(args.config_file):
             if not writeargstofile:
-                print("Config file: %s not found, creating it with the default values" % args.config_file )
+                print("Config file: %s not found, creating it with the default values" % args.config_file)
             else:
-                print("Config file: %s not found, creating it with the passed values" % args.config_file )
+                print("Config file: %s not found, creating it with the passed values" % args.config_file)
             _cfgp  =  ConfigParser()
 
             # create sections
@@ -179,8 +182,8 @@ class Configuration(object):
             _cfgp.add_section('logging')
 
 
-            for sec, options in self.default_args.iteritems():
-                for opt, val in options.iteritems():
+            for sec, options in self.default_args.items():
+                for opt, val in options.items():
                     _cfgp.set(sec, opt, str(val))
 
             with open(args.config_file, 'wb') as configfile:
@@ -191,7 +194,7 @@ class Configuration(object):
         _cfgp.read(args.config_file)
 
         # 3: override specific settings
-        for key, val in default_arguments_dict.iteritems():
+        for key, val in default_arguments_dict.items():
             # if a nondefault value was passed through command line arguments set it
             if args_dict[key] != val:
                 sec, opt = key.split('_')

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from base import app
+from .base import app
 from flask import render_template, url_for, abort
 
 @app.route("/about")
@@ -11,7 +11,7 @@ def about():
 try:
   import yaml
 except:
-  print "You have to install pyyaml"
+  print("You have to install pyyaml")
   exit(0)
 
 # reading and sorting list of contributors once at startup
@@ -31,7 +31,7 @@ def alive():
 
 @app.route("/info")
 def info():
-    from base import git_infos
+    from .base import git_infos
     from socket import gethostname
     output = "HOSTNAME = %s\n\n" % gethostname()
     output += "# GIT info\n";
@@ -107,13 +107,13 @@ def index():
 # Harald suggested putting the following in base.pybut it does not work either there or here!
 #
 # create the sidebar from its yaml file and inject it into the jinja environment
-#from sidebar import get_sidebar
+#from .sidebar import get_sidebar
 #app.jinja_env.globals['sidebar'] = get_sidebar()
 #
 # so instead we do this to ensure that the sidebar content is available to every page:
 @app.context_processor
 def inject_sidebar():
-    from sidebar import get_sidebar
+    from .sidebar import get_sidebar
     return dict(sidebar=get_sidebar())
 
 

@@ -36,7 +36,7 @@ N_max_extra_comp = 500
 ## https://github.com/LMFDB/lmfdb/pull/1409#issuecomment-220733555
 use_cache = False
 
-import views
+from . import views
 assert views
-from backend import WebNewForm, WebModFormSpace
+from .backend import WebNewForm, WebModFormSpace
 assert WebNewForm and WebModFormSpace

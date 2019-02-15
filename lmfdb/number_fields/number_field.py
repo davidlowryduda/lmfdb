@@ -4,7 +4,13 @@ import time, os
 import flask
 from lmfdb.base import app
 from flask import render_template, request, url_for, redirect, send_file, flash, make_response
-import StringIO
+
+import sys
+if sys.version_info > (3, 0):
+    import io as StringIO
+else:
+    import StringIO
+
 from lmfdb.number_fields import nf_page, nf_logger
 from lmfdb.WebNumberField import field_pretty, WebNumberField, nf_knowl_guts, factor_base_factor, factor_base_factorization_latex
 from lmfdb.db_backend import db
@@ -74,16 +80,17 @@ def global_numberfield_summary():
     return r'This database contains %s <a title="global number fields" knowl="nf">global number fields</a> of <a title="degree" knowl="nf.degree">degree</a> $n\leq %d$.  Here are some <a href="%s">further statistics</a>.  In addition, extensive data on <a href="%s">class groups of quadratic imaginary fields</a> is available for download.' %(comma(nfields),max_deg,url_for('number_fields.statistics'), url_for('number_fields.render_class_group_data'))
 
 def learnmore_list():
-    return [(Completename, url_for(".render_discriminants_page")), 
+    return [(Completename, url_for(".render_discriminants_page")),
             ('Source of the data', url_for(".source")),
             ('Reliability of the data', url_for(".reliability")),
-            ('Global number field labels', url_for(".render_labels_page")), 
-            ('Galois group labels', url_for(".render_groups_page")), 
+            ('Global number field labels', url_for(".render_labels_page")),
+            ('Galois group labels', url_for(".render_groups_page")),
             ('Quadratic imaginary class groups', url_for(".render_class_group_data"))]
 
 # Return the learnmore list with the matchstring entry removed
 def learnmore_list_remove(matchstring):
-    return filter(lambda t:t[0].find(matchstring) <0, learnmore_list())
+    return [t for t in learnmore_list() if t[0].find(matchstring) < 0]
+
 
 #def group_display_shortC(C):
 #    def gds(nt):
@@ -107,7 +114,7 @@ def source():
     learnmore = learnmore_list_remove('Source')
     t = 'Source of Number Field Data'
     bread = [('Global Number Fields', url_for(".number_field_render_webpage")), ('Source', ' ')]
-    return render_template("single.html", kid='rcs.source.nf', 
+    return render_template("single.html", kid='rcs.source.nf',
         credit=NF_credit, title=t, bread=bread, learnmore=learnmore)
 
 @nf_page.route("/Reliability")
@@ -115,7 +122,7 @@ def reliability():
     learnmore = learnmore_list_remove('Reliability')
     t = 'Reliability of Number Field Data'
     bread = [('Global Number Fields', url_for(".number_field_render_webpage")), ('Reliability', ' ')]
-    return render_template("single.html", kid='rcs.rigor.nf', 
+    return render_template("single.html", kid='rcs.rigor.nf',
         credit=NF_credit, title=t, bread=bread, learnmore=learnmore)
 
 @nf_page.route("/GaloisGroups")
@@ -140,7 +147,7 @@ def render_discriminants_page():
     learnmore = learnmore_list_remove('Completeness')
     t = 'Completeness of Global Number Field Data'
     bread = [('Global Number Fields', url_for(".number_field_render_webpage")), ('Completeness', ' ')]
-    return render_template("single.html", kid='rcs.cande.nf', 
+    return render_template("single.html", kid='rcs.cande.nf',
         credit=NF_credit, title=t, bread=bread, learnmore=learnmore)
 
 
@@ -194,7 +201,7 @@ def class_group_request_error(info, bread):
 # tots is a list of the total number of fields in each degree n
 # t is the list of t numbers
 def galstatdict(li, tots, t):
-    return [ {'cnt': comma(li[nn]), 
+    return [ {'cnt': comma(li[nn]),
               'prop': format_percentage(li[nn], tots[nn]),
               'query': url_for(".number_field_render_webpage")+'?degree=%d&galois_group=%s'%(nn+1,"%dt%d"%(nn+1,t[nn]))} for nn in range(len(li))]
 
@@ -220,7 +227,7 @@ def statistics():
     has_h = db.nf_fields.stats.get_oldstat('has_h')['val']
     hdeg = db.nf_fields.stats.get_oldstat('hdeg')['counts']
     has_hdeg = db.nf_fields.stats.get_oldstat('has_hdeg')['counts']
-    hdeg = [ [ {'cnt': comma(hdeg[nn][j]), 
+    hdeg = [ [ {'cnt': comma(hdeg[nn][j]),
               'prop': format_percentage(hdeg[nn][j], has_hdeg[nn]),
               'query': url_for(".number_field_render_webpage")+'?degree=%d&class_number=%s'%(nn+1,str(1+10**(j-1))+'-'+str(10**j))} for j in range(len(h))] for nn in range(len(hdeg))]
 
@@ -229,12 +236,12 @@ def statistics():
                  'query': url_for(".number_field_render_webpage")+'?degree=%d&class_number=1-10000000000000'%(nn+1)} for nn in range(len(has_hdeg))]
     maxt = 1+max([len(entry) for entry in nt])
 
-    nt = [ [ {'cnt': comma(nt[nn][tt]), 
+    nt = [ [ {'cnt': comma(nt[nn][tt]),
               'prop': format_percentage(nt[nn][tt], n[nn]),
               'query': url_for(".number_field_render_webpage")+'?degree=%d&galois_group=%s'%(nn+1,"%dt%d"%(nn+1,tt+1))} for tt in range(len(nt[nn]))] for nn in range(len(nt))]
     # Totals for signature table
     sigtotals = [ comma(sum([nsig[nn][r2] for nn in range(max(r2*2-1,0),23)])) for r2 in range(12)]
-    nsig = [ [ {'cnt': comma(nsig[nn][r2]), 
+    nsig = [ [ {'cnt': comma(nsig[nn][r2]),
               'prop': format_percentage(nsig[nn][r2], n[nn]),
               'query': url_for(".number_field_render_webpage")+'?degree=%d&signature=[%d,%d]'%(nn+1,nn+1-2*r2,r2)} for r2 in range(len(nsig[nn]))] for nn in range(len(nsig))]
     h = [ {'cnt': comma(h[j]),
@@ -249,7 +256,7 @@ def statistics():
     # Class number 1 by signature
     sigclass1 = db.nf_fields.stats.get_oldstat('sigclass1')['counts']
     sighasclass = db.nf_fields.stats.get_oldstat('sighasclass')['counts']
-    sigclass1 = [ [ {'cnt': comma(sigclass1[nn][r2]), 
+    sigclass1 = [ [ {'cnt': comma(sigclass1[nn][r2]),
               'prop': format_percentage(sigclass1[nn][r2], sighasclass[nn][r2]) if sighasclass[nn][r2]>0 else 0,
               'show': sighasclass[nn][r2]>0,
               'query': url_for(".number_field_render_webpage")+'?degree=%d&signature=[%d,%d]&class_number=1'%(nn+1,nn+1-2*r2,r2)} for r2 in range(len(nsig[nn]))] for nn in range(len(nsig))]
@@ -286,9 +293,9 @@ def number_field_render_webpage():
         discriminant_list = ["%s..%s" % (start, end - 1) for start, end in zip(
             discriminant_list_endpoints[:-1], discriminant_list_endpoints[1:])]
         info = {
-            'degree_list': range(1, max_deg + 1),
+            'degree_list': list(range(1, max_deg + 1)),
             'signature_list': sig_list,
-            'class_number_list': range(1, 6) + ['6..10'],
+            'class_number_list': list(range(1, 6)) + ['6..10'],
             'count': '20',
             'nfields': comma(nfields),
             'maxdeg': max_deg,
@@ -436,7 +443,7 @@ def render_field_webpage(args):
         rootof1coeff = gpK.nfrootsof1()
         rootofunityorder = int(rootof1coeff[1])
         rootof1coeff = rootof1coeff[2]
-        rootofunity = web_latex(Ra(str(pari("lift(%s)" % gpK.nfbasistoalg(rootof1coeff))).replace('x','a'))) 
+        rootofunity = web_latex(Ra(str(pari("lift(%s)" % gpK.nfbasistoalg(rootof1coeff))).replace('x','a')))
         rootofunity += ' (order $%d$)' % rootofunityorder
     else:
         rootofunity = web_latex(Ra('-1'))+ ' (order $2$)'
@@ -499,7 +506,7 @@ def render_field_webpage(args):
                 sibdeg[2] = ', '.join(sibdeg[2])
                 if len(sibdeg[2])<sibdeg[1]:
                     sibdeg[2] += ', some '+dnc
-                
+
         resinfo.append(('sib', siblings[0]))
         for lab in siblings[1]:
             if lab != '':
@@ -770,7 +777,7 @@ def frobs(nf):
                 if firstone == 0:
                     s += '{,}\,'
                 if j[0]<15:
-                    s += r'{\href{%s}{%d} }'%(url_for('local_fields.by_label', 
+                    s += r'{\href{%s}{%d} }'%(url_for('local_fields.by_label',
                         label="%d.%d.0.1"%(p,j[0])), j[0])
                 else:
                     s += str(j[0])

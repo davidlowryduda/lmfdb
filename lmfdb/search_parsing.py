@@ -20,12 +20,15 @@ FLOAT_RE = re.compile(r'((\b\d+([.]\d*)?)|([.]\d+))(e[-+]?\d+)?')
 BRACKETING_RE = re.compile(r'(\[[^\]]*\])') # won't work for iterated brackets [[a,b],[c,d]]
 
 from flask import flash
+from builtins import range
 from sage.all import ZZ, QQ, prod, euler_phi, CyclotomicField, PolynomialRing
 from sage.misc.decorators import decorator_keywords
 #from sage.misc.misc import subsets
 
 from markupsafe import Markup
 from collections import defaultdict, Counter
+
+from six import iteritems # python 2/3 compatability
 
 class SearchParser(object):
     def __init__(self, f, clean_info, prep_ranges, prep_plus, pass_name, default_field, default_name, default_qfield):
@@ -110,11 +113,11 @@ def parse_ints_to_list(arg):
     if '-' in s[1:]:
         i = s.index('-',1)
         min, max = s[:i], s[i+1:]
-        return xrange(int(min),int(max)+1)
+        return range(int(min),int(max)+1)  # use python3 backported range from builtins
     if '..' in s:
         i = s.index('..',1)
         min, max = s[:i], s[i+2:]
-        return xrange(int(min),int(max)+1)
+        return range(int(min),int(max)+1)  # use python3 backported range from builtins
     return [int(s)]
 
 def parse_ints_to_list_flash(arg,name):
@@ -371,12 +374,12 @@ def _parse_subset(inp, query, qfield, mode, radical, product):
             return
         inp = sorted(inp)
         if inp:
-            print inp
+            print(inp)
             dup_free = [inp[0]]
             for i,x in enumerate(inp[1:]):
                 if x != inp[i]:
                     dup_free.append(x)
-            print dup_free
+            print(dup_free)
         else:
             dup_free = []
         if qfield in query:
@@ -446,10 +449,10 @@ def parse_bracketed_posints(inp, query, qfield, maxlength=None, exactlength=None
             example = "[2]"
         elif exactlength is not None:
             lstr = "list of %s integers" % exactlength
-            example = str(range(2,exactlength+2)).replace(" ","") + " or " + str([3]*exactlength).replace(" ","")
+            example = str(list(range(2,exactlength+2))).replace(" ","") + " or " + str([3]*exactlength).replace(" ","")
         elif maxlength is not None:
             lstr = "list of at most %s integers" % maxlength
-            example = str(range(2,maxlength+2)).replace(" ","") + " or " + str([2]*max(1, maxlength-2)).replace(" ","")
+            example = str(list(range(2,maxlength+2))).replace(" ","") + " or " + str([2]*max(1, maxlength-2)).replace(" ","")
         else:
             lstr = "list of integers"
             example = "[1,2,3] or [5,6]"
@@ -518,7 +521,7 @@ def parse_galgrp(inp, query, qfield, use_bson=True):
                         query[tfield] = {'$in': gcsdict[n]}
                 else:
                     options = []
-                    for n, T in gcsdict.iteritems():
+                    for n, T in iteritems(gcsdict):
                         if len(T) == 1:
                             options.append({nfield: n, tfield: T[0]})
                         else:
@@ -586,7 +589,7 @@ def nf_string_to_label(F):  # parse Q, Qsqrt2, Qsqrt-4, Qzeta5, etc
     F = F.replace('X', 'x')
     if 'x' in F:
         F1 = F.replace('^', '**')
-        # print F
+        # print(F)
         from lmfdb.number_fields.number_field import poly_to_field_label
         F1 = poly_to_field_label(F1)
         if F1:
@@ -695,8 +698,8 @@ def parse_paired_fields(info, query, field1=None, name1=None, qfield1=None, pars
     tmp_query2 = {}
     parse1(info,tmp_query1,field1,name1,qfield1,**kwds1)
     parse2(info,tmp_query2,field2,name2,qfield2,**kwds2)
-    #print tmp_query1
-    #print tmp_query2
+    #print(tmp_query1)
+    #print(tmp_query2)
     def remove_or(D):
         assert len(D) <= 1
         if '$or' in D: return D['$or']
@@ -710,8 +713,8 @@ def parse_paired_fields(info, query, field1=None, name1=None, qfield1=None, pars
         # Analogous to collapse_ors, we update D2
         L1 = remove_or(D1)
         L2 = remove_or(D2)
-        #print L1
-        #print L2
+        #print(L1)
+        #print(L2)
         if not L1:
             return L2
         elif not L2:
@@ -719,7 +722,7 @@ def parse_paired_fields(info, query, field1=None, name1=None, qfield1=None, pars
         else:
             return [{A.keys()[0]:A.values()[0], B.keys()[0]:B.values()[0]} for A in L1 for B in L2]
     L = combine(tmp_query1,tmp_query2)
-    #print L
+    #print(L)
     if len(L) == 1:
         query.update(L[0])
     else:
@@ -751,7 +754,7 @@ def parse_list_start(inp, query, qfield, index_shift=0, parse_singleton=int):
             # MongoDB is not aware that all the queries above imply that qfield
             # must all contain all those elements, we aid MongoDB by explicitly
             # saying that, and hopefully it will use a multikey index.
-            parsed_values = sub_query.values();
+            parsed_values = list(sub_query.values())
             # asking for each value to be in the array
             if parse_singleton is str:
                 all_operand = [val for val in parsed_values if  type(val) == parse_singleton and '-' not in val and ','  not in val ]

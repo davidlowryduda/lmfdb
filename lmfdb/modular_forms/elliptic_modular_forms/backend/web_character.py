@@ -23,7 +23,7 @@ AUTHORS:
 
 
 NOTE: We are now working completely with the Conrey naming scheme.
- 
+
 TODO:
 Fix complex characters. I.e. embedddings and galois conjugates in a consistent way.
 
@@ -35,6 +35,13 @@ from lmfdb.modular_forms.elliptic_modular_forms import emf_logger,emf_version,us
 from sage.structure.unique_representation import CachedRepresentation
 from lmfdb.modular_forms.elliptic_modular_forms.backend.web_object import WebObject, WebInt, WebProperties, WebStr, WebNoStoreObject, WebDict, WebFloat
 
+# python3 compatability
+# If (when) the LMFDB uses only python3, one should replace all occurrences of
+# basestring with str.
+import sys
+if sys.version_info > (3, 0):
+    basestring = str
+
 try:
     from dirichlet_conrey import DirichletCharacter_conrey, DirichletGroup_conrey
 except:
@@ -42,17 +49,17 @@ except:
 
 # import logging
 #emf_logger.setLevel(logging.DEBUG)
-    
+
 class WebChar(WebObject, CachedRepresentation):
     r"""
-    Class which should/might be replaced with 
+    Class which should/might be replaced with
     WebDirichletCharcter once this is ok.
-    
+
     """
     _key = ['modulus', 'number','version']
     _file_key = ['modulus', 'number','version']
     _collection_name = 'webchar'
-    
+
     def __init__(self, modulus=1, number=1, update_from_db=True, compute_values=False, init_dynamic_properties=True):
         r"""
         Init self.
@@ -64,9 +71,9 @@ class WebChar(WebObject, CachedRepresentation):
                 m,n=modulus.split('.')
                 modulus = int(m); number=int(n)
             except:
-                raise ValueError,"{0} does not correspond to the label of a WebChar".format(modulus)
+                raise ValueError("{0} does not correspond to the label of a WebChar".format(modulus))
         if not gcd(number,modulus)==1:
-            raise ValueError,"Character number {0} of modulus {1} does not exist!".format(number,modulus)
+            raise ValueError("Character number {0} of modulus {1} does not exist!".format(number,modulus))
         if number > modulus:
             number = number % modulus
         self._properties = WebProperties(
@@ -80,7 +87,7 @@ class WebChar(WebObject, CachedRepresentation):
             WebNoStoreObject('sage_character', type(trivial_character(1))),
             WebDict('_values_algebraic'),
             WebDict('_values_float'),
-            WebDict('_embeddings'),            
+            WebDict('_embeddings'),
             WebFloat('version', value=float(emf_version))
             )
         emf_logger.debug('Set properties in WebChar!')
@@ -93,7 +100,7 @@ class WebChar(WebObject, CachedRepresentation):
         #    compute = True
         if compute_values:
             self.compute_values()
-            
+
         #emf_logger.debug('In WebChar, self.__dict__ = {0}'.format(self.__dict__))
         emf_logger.debug('In WebChar, self.number = {0}'.format(self.number))
 
@@ -106,11 +113,11 @@ class WebChar(WebObject, CachedRepresentation):
                 self.value(i,value_format='algebraic')
         if changed and save:
             self.save_to_db()
-        else:            
+        else:
             emf_logger.debug('Not saving.')
 
     def init_dynamic_properties(self, embeddings=False):
-        if self.number is not None:            
+        if self.number is not None:
             emf_logger.debug('number: {0}'.format(self.number))
             self.character = DirichletCharacter_conrey(DirichletGroup_conrey(self.modulus),self.number)
             if not self.number == 1:
@@ -123,7 +130,7 @@ class WebChar(WebObject, CachedRepresentation):
                 emb = dirichlet_character_conrey_galois_orbit_embeddings(self.modulus,self.number)
                 self.set_embeddings(emb)
             c = self.character
-            if self.conductor == 0:            
+            if self.conductor == 0:
                 self.conductor = c.conductor()
             if self.order == 0:
                 self.order = c.multiplicative_order()
@@ -131,11 +138,11 @@ class WebChar(WebObject, CachedRepresentation):
                 self.modulus_euler_phi = euler_phi(self.modulus)
             if self.latex_name == '':
                 self.latex_name = "\chi_{" + str(self.modulus) + "}(" + str(self.number) + ", \cdot)"
-            
+
     def is_trivial(self):
         r"""
         Check if self is trivial.
-        """        
+        """
         return self.character.is_trivial()
 
     def embeddings(self):
@@ -172,13 +179,13 @@ class WebChar(WebObject, CachedRepresentation):
           (that is to elements in $S_k(N,\chi)$).
         """
         return self._embeddings[self.number]
-            
+
     def __repr__(self):
         r"""
         Return the string representation of the character of self.
         """
         return self.name
-            
+
     def value(self, x, value_format='algebraic'):
         r"""
         Return the value of self as an algebraic integer or float.
@@ -203,8 +210,8 @@ class WebChar(WebObject, CachedRepresentation):
                 self._values_float[x]=y
             return self._values_float[x]
         else:
-            raise ValueError,"Format {0} is not known!".format(value_format)
-        
+            raise ValueError("Format {0} is not known!".format(value_format))
+
     def url(self):
         r"""
         Return the url of self.
@@ -215,7 +222,7 @@ class WebChar(WebObject, CachedRepresentation):
 
 
 class WebCharProperty(WebInt):
-    
+
     def __init__(self, name, modulus=1, number=int(1), **kwargs):
         #self._default_value = WebChar(modulus, number, update_from_db=True, compute=True)
         self.modulus = modulus
@@ -251,8 +258,8 @@ class WebCharProperty(WebInt):
 
     def to_fs(self):
         return self.to_db()
-    
-   
+
+
 from lmfdb.utils import cache
 def WebChar_cached(modulus,number,**kwds):
     if use_cache:

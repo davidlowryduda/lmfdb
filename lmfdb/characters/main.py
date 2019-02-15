@@ -11,7 +11,7 @@ from lmfdb.WebCharacter import WebDirichletGroup, WebSmallDirichletGroup, WebDir
 from lmfdb.WebCharacter import WebHeckeExamples, WebHeckeFamily, WebHeckeGroup, WebHeckeCharacter
 from lmfdb.WebNumberField import WebNumberField
 from lmfdb.characters import characters_page
-import ListCharacters
+from . import ListCharacters
 
 #### make url_character available from templates
 @app.context_processor
@@ -244,7 +244,7 @@ def dc_calc(calc, modulus, number):
             return WebDirichletCharacter(**args).kloosterman_sum(val)
         else:
             return flask.abort(404)
-    except Warning, e:
+    except Warning as e:
         return "<span style='color:gray;'>%s</span>" % e
     except Exception:
         return "<span style='color:red;'>Error: bad input</span>"
@@ -317,7 +317,7 @@ def hc_calc(calc, number_field, modulus, number):
             return WebHeckeCharacter(**args).value(val)
         else:
             return flask.abort(404)
-    except Exception, e:
+    except Exception as e:
         return "<span style='color:red;'>ERROR: %s</span>" % e
 
 ###############################################################################

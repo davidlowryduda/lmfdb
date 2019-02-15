@@ -1,2 +1,2 @@
-import emf_main
+from . import emf_main
 assert emf_main

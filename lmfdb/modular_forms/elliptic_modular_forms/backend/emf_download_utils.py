@@ -3,7 +3,14 @@ r"""
 Routines for helping with the download of modular forms data.
 
 """
-import StringIO
+
+# python3 compatability
+import sys
+if sys.version_info > (3, 0):
+    import io as StringIO
+else:
+    import StringIO
+
 import flask
 from flask import send_file,redirect,url_for
 from lmfdb.modular_forms.elliptic_modular_forms import emf_logger
@@ -67,7 +74,7 @@ def print_list_of_coefficients(info):
     """
     level = my_get(info, 'level', -1, int)
     weight = my_get(info, 'weight', -1, int)
-    bitprec = my_get(info, 'bitprec', 12, int)  # number of digits                
+    bitprec = my_get(info, 'bitprec', 12, int)  # number of digits
     character = my_get(info, 'character', '', str)  # int(info.get('weight',0))
     fmt = info.get("format","q_expansion")
     if character == '':
@@ -77,7 +84,7 @@ def print_list_of_coefficients(info):
         character = int(character)
     else:
         return "The character '{0}' is not well-defined!".format(character)
-    print "--------------"
+    print("--------------")
     if label == '' or level == -1 or weight == -1:
         return "Need to specify a modular form completely!!"
 
@@ -98,9 +105,9 @@ def print_list_of_coefficients(info):
     if fmt == "sage":
         res = []
     if number > F.max_available_prec():
-        raise IndexError,"The database does not contain this many ({0}) coefficients for this modular form! We only have {1}".format(number,F.max_available_prec())
+        raise IndexError("The database does not contain this many ({0}) coefficients for this modular form! We only have {1}".format(number,F.max_available_prec()))
     if fmt == "sage":
-        qe = F.coefficients(range(number))
+        qe = F.coefficients(list(range(number)))
         res.append(qe)
     else:
         coefs += print_coefficients_for_one_form(F, number, info['format'],bitprec=bitprec)
@@ -109,14 +116,14 @@ def print_list_of_coefficients(info):
     else:
         if len(res)==1:
             res = res[0]
-        #print "res=",res
+        #print("res=",res)
         return dumps(res)
 
 
 
 def print_coefficients_for_one_form(F, number, fmt="q_expansion",bitprec=53):
     emf_logger.debug("in print {2} coefs for 1 form: format={0} bitprec={1}, F={3}".format(fmt,bitprec,number,F))
-    # Start with some meta-data 
+    # Start with some meta-data
     s = "## level={N}, weight={k}, character={ch},label={label} \n".format(N=F.level,k=F.weight,ch=F.character.number,label=F.label)
     #max_cn = F.max_cn()
     #emf_logger.debug("evs={0}".format(F.eigenvalues))
@@ -136,7 +143,7 @@ def print_coefficients_for_one_form(F, number, fmt="q_expansion",bitprec=53):
         s += "\n\n"
         s += str(F.q_expansion.truncate_powerseries(number))
     if fmt == "coefficients":
-        qe = F.coefficients(range(number))
+        qe = F.coefficients(list(range(number)))
         #emf_logger.debug("F={0}".format(F))
         #deg=0 [emf_download_utils.py:147
         if deg > 1:

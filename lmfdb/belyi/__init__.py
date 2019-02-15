@@ -11,7 +11,7 @@ belyi_logger = make_logger(belyi_page)
 def body_class():
     return {'body_class': 'belyi'}
 
-import main
+from . import main
 assert main # silence pyflakes
 
 app.register_blueprint(belyi_page, url_prefix="/Belyi")

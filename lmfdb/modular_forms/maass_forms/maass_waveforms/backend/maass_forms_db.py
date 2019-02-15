@@ -6,6 +6,14 @@ from sage.all import Integer, loads
 from lmfdb.modular_forms.maass_forms.maass_waveforms import mwf_logger
 logger = mwf_logger
 
+# python3 compatability
+# If (when) the LMFDB uses only python3, one should replace all occurrences of
+# basestring with str.
+import sys
+if sys.version_info > (3, 0):
+    basestring = str
+from six import iteritems
+
 class MaassDB(object):
     r"""
     Compute and store Maass forms
@@ -47,18 +55,18 @@ class MaassDB(object):
 
     def get_coefficients(self, data={}, verbose=0, **kwds):
         if verbose > 0:
-            print "data=", data
+            print("data=", data)
         maass_id = data.get('maass_id')
         if maass_id is None:
             raise ValueError
         if verbose > 0:
-            print "id=", maass_id
+            print("id=", maass_id)
         f = db.mwf_forms.lucky({'maass_id': maass_id})
         if f is None:
             return None
         nc = f.get('Numc', 0)
         if verbose > 0:
-            print "f=", f
+            print("f=", f)
         if nc == 0:
             return None
         cid = f.get('coeff_label', None)
@@ -90,7 +98,7 @@ class MaassDB(object):
     #     f = self._mongo_db.DirChars.find_one({'Modulus': int(N), 'Parity': int(parity), 'Conrey': int(1)})
     #     if verbose > 0:
 
-    #         print "f=", f
+    #         print("f=", f)
     #     if f is not None:
     #         return f.get('Chars')
     #     D = DirichletGroup(N)
@@ -101,7 +109,7 @@ class MaassDB(object):
     #         DGG = filter(lambda x: x[0].is_odd(), DG)
     #     l = []
     #     if verbose > 0:
-    #         print "DG=", DGG
+    #         print("DG=", DGG)
     #     for x in DGG:
     #         xi = D.list().index(x[0])
     #         xi = self.getDircharConrey(N, xi)
@@ -163,17 +171,17 @@ class MaassDB(object):
     #    r"""
     #    Show which levels, characters and weights are in the database
     #    """
-    #    # print "levels=",levels
+    #    # print("levels=",levels)
     #    res = {}
     #    for coll in self._show_collection:
     #        res[coll.name] = {}
-    #        # print "name=",coll.name
-    #        # print "res=",res
+    #        # print("name=",coll.name)
+    #        # print("res=",res)
     #        weights = coll.distinct('Weight')
     #        for k in weights:
     #            res[coll.name][k] = {}
     #            levels = coll.find({'Weight': k}).distinct('Level')
-    #            # print "levels=",levels
+    #            # print("levels=",levels)
     #            for N in levels:
     #                res[coll.name][k][N] = {}
     #                if is_even(int(k)):
@@ -206,8 +214,8 @@ class MaassDB(object):
 
     def set_table(self, refresh=False):
         self.table = db.mwf_tables.lucky({})
-        self.table['keylist'] = map(tuple, self.table['keylist'])
-        self.table['data'] = {tuple(map(int, k.split(','))):tuple(v) for k,v in self.table['data'].iteritems()}
+        self.table['keylist'] = list(map(tuple, self.table['keylist']))
+        self.table['data'] = {tuple(map(int, k.split(','))):tuple(v) for k,v in iteritems(self.table['data'])}
         #data = self.show_data()
         #table = {}
         #table['weights'] = data.keys()
@@ -257,7 +265,7 @@ class MaassDB(object):
         else:
             s = ""
         if date == 1:
-            print "rdate=", rdate
+            print("rdate=", rdate)
             s += "{0:^7}{1:^7}{2:^7}{3:^20.15f}{4:^10}{5:^7}{6:^3.1e}{7:^15}{8:^20}{9} \n".format(
                 N, k, ch, R, st, dim, err, nc, evs, sdate)
         else:
@@ -267,7 +275,7 @@ class MaassDB(object):
 
     def show_last(self):
         last = db.mwf_forms.search({}, sort=[('date',-1)], limit=1)[0]
-        print self.display_one_record(last, date=1)
+        print(self.display_one_record(last, date=1))
 
 maass_db = MaassDB()
 

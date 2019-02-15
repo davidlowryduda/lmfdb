@@ -12,11 +12,12 @@ add --debug if you are developing (auto-restart, full stacktrace in browser, ...
 """
 
 
+import sys
 import logging
-import utils
+from . import utils
 import os
 import time
-from base import app, set_logfocus, get_logfocus, _init
+from .base import app, set_logfocus, get_logfocus, _init
 from flask import g, render_template, request, make_response, redirect, url_for, current_app, abort
 import sage
 from lmfdb.config import Configuration
@@ -58,77 +59,77 @@ if True:
 
 # Import top-level modules that makeup the site
 # Note that this necessarily includes everything, even code in still in an alpha state
-import pages
+from . import pages
 assert pages
-import api
+from . import api
 assert api
-import belyi
+from . import belyi
 assert belyi
-import bianchi_modular_forms
+from . import bianchi_modular_forms
 assert bianchi_modular_forms
-import hilbert_modular_forms
+from . import hilbert_modular_forms
 assert hilbert_modular_forms
-import half_integral_weight_forms
+from . import half_integral_weight_forms
 assert half_integral_weight_forms
-import siegel_modular_forms
+from . import siegel_modular_forms
 assert siegel_modular_forms
-import modular_forms
+from . import modular_forms
 assert modular_forms
-import elliptic_curves
+from . import elliptic_curves
 assert elliptic_curves
-import ecnf
+from . import ecnf
 assert ecnf
-import number_fields
+from . import number_fields
 assert number_fields
-import lfunction_db
+from . import lfunction_db
 assert lfunction_db
-import lfunctions
+from . import lfunctions
 assert lfunctions
-import genus2_curves
+from . import genus2_curves
 assert genus2_curves
-import sato_tate_groups
+from . import sato_tate_groups
 assert sato_tate_groups
-import users
+from . import users
 assert users
-import knowledge
+from . import knowledge
 assert knowledge
-import characters
+from . import characters
 assert characters
-import local_fields
+from . import local_fields
 assert local_fields
-import galois_groups
+from . import galois_groups
 assert galois_groups
-import artin_representations
+from . import artin_representations
 assert artin_representations
-import tensor_products
+from . import tensor_products
 assert tensor_products
-import zeros
+from . import zeros
 assert zeros
-import crystals
+from . import crystals
 assert crystals
-import permutations
+from . import permutations
 assert permutations
-import hypergm
+from . import hypergm
 assert hypergm
-import motives
+from . import motives
 assert motives
-import riemann
+from . import riemann
 assert riemann
-import lattice
+from . import lattice
 assert lattice
-import higher_genus_w_automorphisms
+from . import higher_genus_w_automorphisms
 assert higher_genus_w_automorphisms
-import abvar
+from . import abvar
 assert abvar
 import abvar.fq
 assert abvar.fq
-import modlmf
+from . import modlmf
 assert modlmf
-import rep_galois_modl
+from . import rep_galois_modl
 assert rep_galois_modl
-import hecke_algebras
+from . import hecke_algebras
 assert hecke_algebras
-from inventory_app.inventory_app import inventory_app
+from .inventory_app.inventory_app import inventory_app
 assert inventory_app
 
 
@@ -138,7 +139,12 @@ def timestamp():
 @app.before_request
 def redirect_nonwww():
     """Redirect lmfdb.org requests to www.lmfdb.org"""
-    from urlparse import urlparse, urlunparse
+
+    if sys.version_info > (3, 0): # python 3
+        from urllib.parse import urlparse, urlunparse
+    else:                         # python 2
+        from urlparse import urlparse, urlunparse
+
     urlparts = urlparse(request.url)
     if urlparts.netloc == 'lmfdb.org':
         replaced = urlparts._replace(netloc='www.lmfdb.org')
@@ -169,7 +175,7 @@ def root_static_file(name):
         logging.critical("root_static_file: file %s not found!" % fn)
         return abort(404, 'static file %s not found.' % fn)
     app.add_url_rule('/%s' % name, 'static_%s' % name, static_fn)
-map(root_static_file, ['favicon.ico'])
+list(map(root_static_file, ['favicon.ico']))
 
 
 @app.route("/robots.txt")
@@ -233,13 +239,9 @@ def main():
     flask_options = Configuration().get_flask();
 
     if "profiler" in flask_options and flask_options["profiler"]:
-        print "Profiling!"
+        print("Profiling!")
         from werkzeug.contrib.profiler import ProfilerMiddleware
         app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions = [30], sort_by=('cumulative','time','calls'))
         del flask_options["profiler"]
 
     app.run(**flask_options)
-
-
-
-

@@ -1,4 +1,4 @@
 # -*- coding: utf-8 -*-
 
-import mwf_main
+from . import mwf_main
 assert mwf_main

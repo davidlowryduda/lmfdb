@@ -11,6 +11,6 @@ pytest-cov
 pytest-xdist
 cython
 markupsafe
-git+https://github.com/jwbober/conrey-dirichlet-characters.git@master#egg=dirichlet_conrey
+git+https://github.com/JohnCremona/conrey-dirichlet-characters.git@py3#egg=dirichlet_conrey
 bcrypt
 pymongo

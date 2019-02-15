@@ -5,9 +5,17 @@
 import re
 import time
 import ast
-import StringIO
+
+import sys
+if sys.version_info > (3, 0):
+    import io as StringIO
+    from urllib.parse import quote, unquote
+    from functools import reduce
+else:
+    import StringIO
+    from urllib import quote, unquote
+
 from operator import mul
-from urllib import quote, unquote
 from lmfdb.db_backend import db
 from lmfdb.db_encoding import Json
 from lmfdb.base import app
@@ -117,17 +125,20 @@ ecnf_credit = "John Cremona, Alyson Deines, Steve Donelly, Paul Gunnells, Warren
 
 def get_bread(*breads):
     bc = [("Elliptic Curves", url_for(".index"))]
-    map(bc.append, breads)
+    list(map(bc.append, breads))
     return bc
+
 
 def learnmore_list():
     return [('Completeness of the data', url_for(".completeness_page")),
             ('Source of the data', url_for(".how_computed_page")),
             ('Elliptic Curve labels', url_for(".labels_page"))]
 
+
 # Return the learnmore list with the matchstring entry removed
 def learnmore_list_remove(matchstring):
-    return filter(lambda t:t[0].find(matchstring) <0, learnmore_list())
+    return [t for t in learnmore_list() if t[0].find(matchstring) < 0]
+
 
 @ecnf_page.route("/Completeness")
 def completeness_page():

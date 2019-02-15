@@ -16,7 +16,7 @@
 r"""
 Main file for viewing elliptical modular forms.
 
-AUTHORS: 
+AUTHORS:
  - Fredrik Strömberg
  - Stephan Ehlen
 
@@ -35,11 +35,20 @@ from lmfdb.modular_forms.elliptic_modular_forms.backend.emf_utils import (
     extract_data_from_jump_to,
     newform_label,
     parse_newform_label)
-from emf_render_web_newform import render_web_newform
-from emf_render_web_modform_space import render_web_modform_space
-from emf_render_web_modform_space_gamma1 import render_web_modform_space_gamma1
+from .emf_render_web_newform import render_web_newform
+from .emf_render_web_modform_space import render_web_modform_space
+from .emf_render_web_modform_space_gamma1 import render_web_modform_space_gamma1
 
-from emf_render_navigation import render_elliptic_modular_form_navigation_wp
+from .emf_render_navigation import render_elliptic_modular_form_navigation_wp
+
+
+# python3 compatability
+# If (when) the LMFDB uses only python3, one should replace all occurrences of
+# basestring with str.
+import sys
+if sys.version_info > (3, 0):
+    basestring = str
+
 
 emf_logger.setLevel(int(100))
 
@@ -120,9 +129,9 @@ def render_elliptic_modular_forms(level=None, weight=None, character=None, label
         # if weight<=0:  weight=None
         if 'jump_to' in info:  # try to find out which form we want to jump
             s = my_get(info, 'jump_to', '', str)
-            emf_logger.info("info.keys1={0}".format(info.keys()))
+            emf_logger.info("info.keys1={0}".format(list(info.keys())))
             info.pop('jump_to')
-            emf_logger.info("info.keys2={0}".format(info.keys()))
+            emf_logger.info("info.keys2={0}".format(list(info.keys())))
             args = extract_data_from_jump_to(s)
             emf_logger.debug("args=%s" % args)
             return redirect(url_for("emf.render_elliptic_modular_forms", **args), code=301)
@@ -315,7 +324,7 @@ def validate_parameters(level=0,weight=0,character=None,label='',info={}):
         msg = "<br>".join(m)
         flash(Markup(msg),'error')
         emf_logger.debug("validate: {0}".format(msg))
-        
+
 # If we don't match any arglist above we see if we have only a label
 # or else catch malformed urls
 @emf.route("/<level>")

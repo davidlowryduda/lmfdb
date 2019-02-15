@@ -1,7 +1,7 @@
 from lmfdb.modular_forms.backend.mf_classes import MFDataTable
 from lmfdb.utils import truncate_number
-from mwf_utils import mwf_logger
-from maass_forms_db import maass_db
+from .mwf_utils import mwf_logger
+from .maass_forms_db import maass_db
 from sage.all import Gamma0, CC
 from lmfdb.db_backend import db
 
@@ -57,7 +57,7 @@ class MaassFormTable(MFDataTable):
             self._table = []
             return
         limit = min(numc, self._nrows)
-        self._row_heads = range(limit)
+        self._row_heads = list(range(limit))
         self._col_heads = ['n', 'C(n)']
         row_min = self._nrows * skip
         mwf_logger.debug("numc: {0}".format(numc))
@@ -273,7 +273,7 @@ class WebMaassForm(object):
         """
         table = {'nrows': self.num_coeff}
         if fnr < 0:
-            colrange = range(self.dim)
+            colrange = list(range(self.dim))
             table['ncols'] = self.dim + 1
         elif fnr < self.dim:
             colrange = [fnr]
@@ -312,7 +312,7 @@ class WebMaassForm(object):
             if not isinstance(self.coeffs, dict):
                 self.table = {}
                 return
-            for n in range(len(self.coeffs.keys() / 2)):
+            for n in range(len(self.coeffs.keys() // 2)):
                 row = [n]
                 if self.dim == 1:
                     for k in range(table['ncols']):

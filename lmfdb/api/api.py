@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import urllib2
+import sys
+if sys.version_info > (3, 0):
+    from urllib.parse import unquote
+else:
+    from urllib2 import unquote
+
 import re
 import yaml
 import json
@@ -16,6 +21,13 @@ from flask import render_template, request, url_for, current_app
 from lmfdb.api import api_page, api_logger
 from bson import json_util
 from bson.objectid import ObjectId
+
+# python3 compatability
+# All strings are unicode in python3, so one should replace all
+# direct casts to unicode.
+if sys.version_info > (3, 0):
+    unicode = str
+from six import iteritems
 
 def pluck(n, list):
     return [_[n] for _ in list]
@@ -42,7 +54,7 @@ def hidden_collection(c):
 #    input: cursor for the collection
 #    output: a set with all the keys indexed
 #    """
-#    return set([t[0] for t in sum([val['key'] for name, val in collection.index_information().iteritems() if name!='_id_'],[])])
+#    return set([t[0] for t in sum([val['key'] for name, val in iteritems(collection.index_information()) if name!='_id_'],[])])
 
 def get_database_info(show_hidden=False):
     info = defaultdict(list)
@@ -174,7 +186,7 @@ def api_query(table, id = None):
     else:
         single_object = False
 
-        for qkey, qval in request.args.iteritems():
+        for qkey, qval in iteritems(request.args):
             from ast import literal_eval
             try:
                 if qkey.startswith("_"):
@@ -190,9 +202,9 @@ def api_query(table, id = None):
                 elif qval.startswith("ls"):      # indicator, that it might be a list of strings
                     qval = qval[2].split(DELIM)
                 elif qval.startswith("li"):
-                    print qval
+                    print(qval)
                     qval = [int(_) for _ in qval[2:].split(DELIM)]
-                    print qval
+                    print(qval)
                 elif qval.startswith("lf"):
                     qval = [float(_) for _ in qval[2:].split(DELIM)]
                 elif qval.startswith("py"):     # literal evaluation
@@ -236,7 +248,7 @@ def api_query(table, id = None):
         except QueryCanceledError:
             flash_error("Query %s exceeded time limit.", q)
             return flask.redirect(url_for(".api_query", table=table))
-        except KeyError, err:
+        except KeyError as err:
             flash_error("No key %s in table %s", err, table)
             return flask.redirect(url_for(".api_query", table=table))
 
@@ -250,10 +262,10 @@ def api_query(table, id = None):
     # fixup data for display and json/yaml encoding
     if 'bytea' in coll.col_type.values():
         for row in data:
-            for key, val in row.iteritems():
+            for key, val in iteritems(row):
                 if type(val) == buffer:
                     row[key] = "[binary data]"
-        #data = [ dict([ (key, val if coll.col_type[key] != 'bytea' else "binary data") for key, val in row.iteritems() ]) for row in data]
+        #data = [ dict([ (key, val if coll.col_type[key] != 'bytea' else "binary data") for key, val in iteritems(row) ]) for row in data]
     data = Json.prep(data)
 
     # preparing the datastructure
@@ -293,7 +305,7 @@ def api_query(table, id = None):
         location = table
         title = "API - " + location
         bc = [("API", url_for(".index")), (table,)]
-        query_unquote = urllib2.unquote(data["query"])
+        query_unquote = unquote(data["query"])
         return render_template("collection.html",
                                title=title,
                                single_object=single_object,

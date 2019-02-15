@@ -27,6 +27,17 @@ from markupsafe import Markup
 
 from lmfdb.base import app, ctx_proc_userdata
 
+# python3 compatability
+# If (when) the LMFDB uses only python3, one should replace all occurrences of
+# basestring with str.
+# Similarly, all strings are unicode in python3, so one should replace all
+# direct casts to unicode.
+import sys
+if sys.version_info > (3, 0):
+    basestring = str
+    unicode = str
+from six import next
+
 ################################################################################
 #   number utilities
 ################################################################################
@@ -523,10 +534,10 @@ def random_object_from_collection(collection):
         if obj: # we could get null here if objects have been deleted without recreating the collection.rand index, if this happens, just rever to old method
             return obj
     if pymongo.version_tuple[0] < 3:
-        return collection.aggregate({ '$sample': { 'size': int(1) } }, cursor = {} ).next()
+        return next(collection.aggregate({ '$sample': { 'size': int(1) } }, cursor = {} ))
     else:
         # Changed in version 3.0: The aggregate() method always returns a CommandCursor. The pipeline argument must be a list.
-        return collection.aggregate([{ '$sample': { 'size': int(1) } } ]).next()
+        return next(collection.aggregate([{ '$sample': { 'size': int(1) } } ]))
 
 ################################################################################
 #  pagination utilities
@@ -877,10 +888,15 @@ def encode_plot(P, pad=None, pad_inches=0.1, bbox_inches=None):
     formatted plot, which can be displayed in web pages with no
     further intervention.
     """
-    from StringIO import StringIO
+    if sys.verion_info > (3, 0):
+        from io import StringIO
+        from urllib.parse import quote
+    else:
+        from StringIO import StringIO
+        from urllib import quote
+
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from base64 import b64encode
-    from urllib import quote
 
     virtual_file = StringIO()
     fig = P.matplotlib()

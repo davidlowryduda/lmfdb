@@ -8,11 +8,11 @@ MF = "mf"
 mf = flask.Blueprint(MF, __name__, template_folder="views/templates", static_folder="views/static")
 mf_logger = make_logger(mf)
 
-import elliptic_modular_forms
+from . import elliptic_modular_forms
 assert elliptic_modular_forms
-import maass_forms
+from . import maass_forms
 assert maass_forms
-import views
+from . import views
 assert views
 
 lmfdb.base.app.register_blueprint(mf, url_prefix="/ModularForm/")

@@ -1,7 +1,13 @@
 import os
 import yaml
 from flask import url_for
-from urllib import quote
+
+import sys
+if sys.version_info > (3, 0):
+    from urllib.parse import quote
+else:
+    from urllib import quote
+
 from sage.all import ZZ, var, PolynomialRing, QQ, RDF, rainbow, implicit_plot, plot, text, Infinity, sqrt, prod, Factorization
 from lmfdb.db_backend import db
 from lmfdb.utils import web_latex, web_latex_split_on, web_latex_ideal_fact, encode_plot
@@ -253,7 +259,7 @@ class ECNF(object):
         data = db.ec_nfcurves.lookup(label)
         if data:
             return ECNF(data)
-        print "No such curve in the database: %s" % label
+        print("No such curve in the database: %s" % label)
 
     def make_E(self):
         #print("Creating ECNF object for {}".format(self.label))

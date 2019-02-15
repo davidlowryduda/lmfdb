@@ -11,7 +11,7 @@ bmf_logger = make_logger(bmf_page)
 def body_class():
     return {'body_class': 'bmf'}
 
-import bianchi_modular_form
+from . import bianchi_modular_form
 assert bianchi_modular_form
 
 app.register_blueprint(bmf_page, url_prefix="/ModularForm/GL2/ImaginaryQuadratic")

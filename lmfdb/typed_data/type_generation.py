@@ -65,11 +65,11 @@ def Array(*f, **kwargs):
         pass
 
     def initOneFunction(self, x, n=kwargs.get("n")):
-        tmp = (map(f[0], x[:n]))
+        tmp = list(map(f[0], x[:n]))
         list.__init__(self, tmp)
 
     def initMultipleFunctions(self, x):
-        tmp = map(lambda ff, xx: ff(xx), f, x)
+        tmp = list(map(lambda ff, xx: ff(xx), f, x))
         list.__init__(self, tmp)
 
     if len(f) == 1:

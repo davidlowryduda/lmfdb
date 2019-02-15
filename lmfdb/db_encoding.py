@@ -22,6 +22,18 @@ from sage.modules.free_module_element import vector, FreeModuleElement
 import json
 import datetime
 
+
+# python3 compatability
+# If (when) the LMFDB uses only python3, one should replace all occurrences of
+# basestring with str.
+# Similarly, all strings are unicode in python3, so one should replace all
+# direct casts to unicode.
+import sys
+if sys.version_info > (3, 0):
+    basestring = str
+    unicode = str
+from six import iteritems
+
 def setup_connection(conn):
     # We want to use unicode everywhere
     register_type(UNICODE, conn)
@@ -157,9 +169,9 @@ class Json(pgJson):
         elif isinstance(obj, dict):
             if obj and all(isinstance(k, (int, Integer)) for k in obj):
                 return {'__IntDict__': 0, # encoding version
-                        'data': [[int(k), cls.prep(v, escape_backslashes)] for k, v in obj.items()]}
+                        'data': [[int(k), cls.prep(v, escape_backslashes)] for k, v in iteritems(obj)]}
             elif all(isinstance(k, basestring) for k in obj):
-                return {k:cls.prep(v, escape_backslashes) for k,v in obj.iteritems()}
+                return {k:cls.prep(v, escape_backslashes) for k,v in iteritems(obj)}
             else:
                 raise TypeError("keys must be strings or integers")
         elif isinstance(obj, FreeModuleElement):
@@ -318,7 +330,7 @@ def copy_dumps(inp, typ):
     - ``typ`` -- the Postgres type of the column in which this data is being stored.
     """
     if inp is None:
-        return ur'\N'
+        return unicode(r'\N')
     elif typ in ('text', 'char', 'varchar'):
         if not isinstance(inp, basestring):
             inp = str(inp)

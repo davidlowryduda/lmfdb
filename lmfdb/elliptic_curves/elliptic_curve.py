@@ -8,7 +8,12 @@ from lmfdb.base import app
 from flask import render_template, url_for, request, redirect, make_response, send_file
 import tempfile
 import os
-import StringIO
+
+import sys
+if sys.version_info > (3, 0):
+    import io as StringIO
+else:
+    import StringIO
 
 from lmfdb.utils import web_latex, to_dict, web_latex_split_on_pm
 from lmfdb.elliptic_curves import ec_page, ec_logger
@@ -61,7 +66,8 @@ def learnmore_list():
 
 # Return the learnmore list with the matchstring entry removed
 def learnmore_list_remove(matchstring):
-    return filter(lambda t:t[0].find(matchstring) <0, learnmore_list())
+    return [t for t in learnmore_list() if t[0].find(matchstring) < 0]
+
 
 #########################
 #  Search/navigate
@@ -82,8 +88,8 @@ def rational_elliptic_curves(err_args=None):
     conductor_list_endpoints = [1, 100, 1000, 10000, 100000, counts['max_N'] + 1]
     conductor_list = ["%s-%s" % (start, end - 1) for start, end in zip(conductor_list_endpoints[:-1],
                                                                        conductor_list_endpoints[1:])]
-    rank_list = range(counts['max_rank'] + 1)
-    torsion_list = range(1,11) + [12, 16]
+    rank_list = list(range(counts['max_rank'] + 1))
+    torsion_list = list(range(1,11) + [12, 16])
     info = {
         'rank_list': rank_list,
         'torsion_list': torsion_list,

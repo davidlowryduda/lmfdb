@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import StringIO
+import sys
+if sys.version_info > (3, 0):
+    import io as StringIO
+else:
+    import StringIO
+
 from ast import literal_eval
 import re
 import time
@@ -32,8 +37,8 @@ def belyistats():
 # List and dictionaries needed routing and searching
 ###############################################################################
 
-from web_belyi import geomtypelet_to_geomtypename_dict as geometry_types_dict
-geometry_types_list = geometry_types_dict.keys()
+from .web_belyi import geomtypelet_to_geomtypename_dict as geometry_types_dict
+geometry_types_list = list(geometry_types_dict.keys())
 
 
 ###############################################################################
@@ -47,7 +52,7 @@ def learnmore_list():
 
 # Return the learnmore list with the matchstring entry removed
 def learnmore_list_remove(matchstring):
-    return filter(lambda t:t[0].find(matchstring) <0, learnmore_list())
+    return [t for t in learnmore_list() if t[0].find(matchstring) < 0]
 
 @belyi_page.route("/")
 def index():
@@ -206,13 +211,13 @@ def break_label(label):
     else:
         raise ValueError("the label must have 5 or 6 dashes")
 
-    abc = map(int, abc[1:-1].split(","))
+    abc = list(map(int, abc[1:-1].split(",")))
     lambdas = [l0, l1, l2]
     for i, elt in lambdas:
         if "," in elt:
-            elt = map(int, elt.split(","))
+            elt = list(map(int, elt.split(",")))
         else:
-            elt = map(int, list(elt))
+            elt = list(map(int, list(elt)))
     genus = int(genus[1:])
     return group, abc, lambdas, genus, gal
 
@@ -312,7 +317,7 @@ def download_search(info):
     s += str(',\n'.join(res_list))
     s += start_and_end[lang][1]
     s += '\n\n'
-    strIO = StringIO.StringIO()
+    strIO = StringIO.StringIO()  #python3 conversion should use io.StringIO()
     strIO.write(s)
     strIO.seek(0)
     return send_file(strIO, attachment_filename=filename, as_attachment=True, add_etags=False)

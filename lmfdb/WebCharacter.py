@@ -6,7 +6,7 @@ from flask import url_for
 from lmfdb.utils import make_logger, web_latex_split_on_pm
 logger = make_logger("DC")
 from lmfdb.nfutils.psort import ideal_label, ideal_from_label
-from WebNumberField import WebNumberField
+from .WebNumberField import WebNumberField
 try:
     from dirichlet_conrey import DirichletGroup_conrey, DirichletCharacter_conrey
 except:
@@ -14,6 +14,12 @@ except:
 from lmfdb.characters.HeckeCharacters import HeckeChar, RayClassGroup
 from lmfdb.characters.TinyConrey import ConreyCharacter, kronecker_symbol, symbol_numerator
 from lmfdb.characters.utils import url_character, complex2str, evalpolelt
+
+
+# python3 compatability
+import sys
+if sys.version_info < (3, 0):
+    from builtins import range as xrange
 
 """
 Any character object is obtained as a double inheritance of
@@ -167,13 +173,13 @@ class WebDirichlet(WebCharObject):
 
     @property
     def gens(self):
-        return map(int, self.H.gens())
+        return list(map(int, self.H.gens()))
 
     @property
     def generators(self):
         #import pdb; pdb.set_trace()
         #assert self.H.gens() is not None
-        return self.textuple(map(str, self.H.gens()))
+        return self.textuple(list(map(str, self.H.gens())))
 
     """ for Dirichlet over Z, everything is described using integers """
     @staticmethod
@@ -198,7 +204,7 @@ class WebDirichlet(WebCharObject):
 
     @property
     def groupelts(self):
-        return map(self.group2tex, self.Gelts())
+        return list(map(self.group2tex, self.Gelts()))
 
     @cached_method
     def Gelts(self):
@@ -313,14 +319,14 @@ class WebHecke(WebCharObject):
     @property
     def generators(self):
         """ use representative ideals """
-        return self.textuple( map(self.ideal2tex, self.G.gen_ideals() ), tag=False )
+        return self.textuple( list(map(self.ideal2tex, self.G.gen_ideals() ), tag=False ))
 
     """ labeling conventions are put here """
 
     @staticmethod
     def char2tex(c, val='\cdot',tag=True):
         """ c is a Hecke character """
-        number = ','.join(map(str,c.exponents()))
+        number = ','.join(list(map(str,c.exponents())))
         s = r'\chi_{%s}(%s)'%(number,val)
         if tag:
             return r'\(%s\)'%s
@@ -392,16 +398,16 @@ class WebHecke(WebCharObject):
             a = self.k.gen()
             x = evalpolelt(x,a,'a')
         elif x.count(','):
-            x = tuple(map(int,x.split(',')))
+            x = tuple(list(map(int,x.split(','))))
         return self.G(x)
 
     @staticmethod
     def number2label(number):
-        return '.'.join(map(str,number))
+        return '.'.join(list(map(str,number)))
 
     @staticmethod
     def label2number(label):
-        return map(int,label.split('.'))
+        return list(map(int,label.split('.')))
 
     @staticmethod
     def label2nf(label):
@@ -409,7 +415,7 @@ class WebHecke(WebCharObject):
 
     @property
     def groupelts(self):
-        return map(self.group2tex, self.Gelts())
+        return list(map(self.group2tex, self.Gelts()))
 
     @cached_method
     def Gelts(self):
@@ -689,7 +695,7 @@ class WebDirichletFamily(WebCharFamily, WebDirichlet):
 
     def first_moduli(self):
         """ restrict to conductors """
-        return ( m for m in xrange(2, self.maxrows) if m%4!=2 )
+        return ( m for m in xrange(2, self.maxrows) if m%4!=2 ) # note this uses python3 backported range
 
     def chargroup(self, mod):
         return WebDirichletGroup(modulus=mod,**self.args)
@@ -762,7 +768,7 @@ class WebSmallDirichletGroup(WebDirichletGroup):
 
     @property
     def generators(self):
-        return self.textuple(map(str, self.H.gens_values()))
+        return self.textuple(list(map(str, self.H.gens_values())))
 
 class WebSmallDirichletCharacter(WebChar, WebDirichlet):
     """
@@ -927,7 +933,7 @@ class WebDirichletCharacter(WebSmallDirichletCharacter):
     @property
     def genvalues(self):
         logvals = [self.chi.logvalue(k) for k in self.H.gens()]
-        return self.textuple( map(self.texlogvalue, logvals) )
+        return self.textuple( list(map(self.texlogvalue, logvals) ))
 
     @property
     def codegenvalues(self):
@@ -1003,7 +1009,7 @@ class WebDirichletCharacter(WebSmallDirichletCharacter):
         return { 'sage': 'chi.sage_character().jacobi_sum(n)' }
 
     def kloosterman_sum(self, arg):
-        a, b = map(int, arg.split(','))
+        a, b = list(map(int, arg.split(',')))
         modulus, number = self.modulus, self.number
         if modulus == 1:
             # there is a bug in sage for modulus = 1
@@ -1184,7 +1190,7 @@ class WebHeckeCharacter(WebChar, WebHecke):
     @property
     def genvalues(self):
         logvals = self.chi.logvalues_on_gens()
-        return self.textuple( map(self.texlogvalue, logvals))
+        return self.textuple( list(map(self.texlogvalue, logvals)))
 
     @property
     def galoisorbit(self):
