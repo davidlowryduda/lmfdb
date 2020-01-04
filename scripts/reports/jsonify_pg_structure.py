@@ -1,5 +1,5 @@
-import dbtools
-import id_object
+from . import dbtools
+from . import id_object
 from lmfdb.backend.database import db
 import datetime
 
